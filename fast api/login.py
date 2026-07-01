@@ -21,9 +21,13 @@ class LoginUser(BaseModel):
 def display():
     return {"message":"welcome to gi "}
 # display all users
-@app.get("/Users")
-def display_users():
-    return {"users":users}
+@app.get("/users/{start_id}&{end_id}")
+def display_users(start_id:int=0,end_id:int=len(users)):
+    temp = []
+    for i in users:
+        if i.id>=start_id and i.id<=end_id:
+            temp.append(i)
+    return {"users":temp}
 
 # register user
 @app.post("/register")

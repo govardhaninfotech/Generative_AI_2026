@@ -15,7 +15,7 @@ class RegisterUser(BaseModel):
 
 @app.get("/")
 def welcome():
-    return {"message": "welcome to fastapi "}
+    return {"users":user}
 
 
 @app.get("/search")
