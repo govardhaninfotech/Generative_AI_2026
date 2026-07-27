@@ -17,7 +17,8 @@ file_handler.setFormatter(formmter)
 
 logging.basicConfig(
     level=logging.INFO,  # show all the logs
-    handlers=[logging.StreamHandler(), file_handler],  # cmd output
+    handlers=[logging.StreamHandler(), # cmd output
+              file_handler],  
 )
 
 
@@ -34,3 +35,4 @@ def home():
     logger.error("show error")
 
     return {"message": "logging deemo running..!"}
+
