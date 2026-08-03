@@ -609,7 +609,7 @@ if "session_id" not in st.session_state:
 
 if "messages" not in st.session_state:
 
-    st.session_state.messages = (
+       st.session_state.messages = (
         load_chat_messages(
             st.session_state.session_id
         )

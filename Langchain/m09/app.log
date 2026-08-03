@@ -1,0 +1,117 @@
+2026-07-28 02:02:02,169 | INFO     |  Admin key seeded
+2026-07-28 02:02:02,452 | INFO     | [21ffa8b3] ->  GET /
+2026-07-28 02:02:02,453 | INFO     | [21ffa8b3] <-  404 | 0ms
+2026-07-28 02:02:02,551 | INFO     | [2fc9f244] ->  GET /favicon.ico
+2026-07-28 02:02:02,552 | INFO     | [2fc9f244] <-  404 | 1ms
+2026-07-28 02:02:09,528 | INFO     | [05240713] ->  GET /docs
+2026-07-28 02:02:09,529 | INFO     | [05240713] <-  200 | 0ms
+2026-07-28 02:02:09,907 | INFO     | [53d718cc] ->  GET /openapi.json
+2026-07-28 02:02:09,932 | INFO     | [53d718cc] <-  200 | 24ms
+2026-07-28 02:02:55,105 | INFO     | [42178a96] ->  POST /auth/generate-key
+2026-07-28 02:02:55,112 | INFO     | [42178a96] <-  403 | 6ms
+2026-07-28 02:08:14,396 | INFO     | [42f21e14] ->  GET /health
+2026-07-28 02:08:14,403 | INFO     | [42f21e14] <-  200 | 6ms
+2026-07-28 02:08:31,659 | INFO     | [2b771aae] ->  GET /health
+2026-07-28 02:08:31,666 | INFO     | [2b771aae] <-  200 | 7ms
+2026-07-28 02:08:41,191 | INFO     | [234c5ea8] ->  GET /health
+2026-07-28 02:08:41,198 | INFO     | [234c5ea8] <-  200 | 7ms
+2026-07-28 02:08:41,224 | INFO     | [0b499af1] ->  POST /chat
+2026-07-28 02:08:41,230 | INFO     | [0b499af1] <-  403 | 6ms
+2026-07-28 02:08:47,991 | INFO     | [189566b4] ->  GET /logs/chat
+2026-07-28 02:08:47,996 | INFO     | [189566b4] <-  403 | 4ms
+2026-07-28 02:08:48,009 | INFO     | [8a02c7e3] ->  GET /health
+2026-07-28 02:08:48,013 | INFO     | [8a02c7e3] <-  200 | 4ms
+2026-07-28 02:09:04,565 | INFO     | [9cc2994e] ->  GET /health
+2026-07-28 02:09:04,571 | INFO     | [9cc2994e] <-  200 | 6ms
+2026-07-28 02:09:10,151 | INFO     | [6e9cb661] ->  GET /health
+2026-07-28 02:09:10,158 | INFO     | [6e9cb661] <-  200 | 6ms
+2026-07-28 02:09:13,475 | INFO     | [9d80ae89] ->  GET /health
+2026-07-28 02:09:13,479 | INFO     | [9d80ae89] <-  200 | 4ms
+2026-07-28 02:09:13,501 | INFO     | [93a06876] ->  POST /chat
+2026-07-28 02:09:13,510 | INFO     | [93a06876] <-  403 | 9ms
+2026-07-28 02:34:38,126 | INFO     | [d38cf3cf] ->  GET /health
+2026-07-28 02:34:38,137 | INFO     | [d38cf3cf] <-  200 | 9ms
+2026-07-28 02:34:41,129 | INFO     | [dadcdb4a] ->  GET /health
+2026-07-28 02:34:41,135 | INFO     | [dadcdb4a] <-  200 | 5ms
+2026-07-28 02:34:42,389 | INFO     | [50cb7a5f] ->  GET /health
+2026-07-28 02:34:42,394 | INFO     | [50cb7a5f] <-  200 | 5ms
+2026-07-28 02:34:42,411 | INFO     | [91a909af] ->  POST /chat
+2026-07-28 02:34:42,418 | INFO     | [91a909af] <-  403 | 7ms
+2026-07-28 02:37:44,059 | INFO     | [87381232] ->  GET /health
+2026-07-28 02:37:44,064 | INFO     | [87381232] <-  200 | 4ms
+2026-07-28 02:37:44,634 | INFO     | [c7a6792c] ->  GET /health
+2026-07-28 02:37:44,639 | INFO     | [c7a6792c] <-  200 | 5ms
+2026-07-28 02:37:46,977 | INFO     | [3f57af9f] ->  GET /health
+2026-07-28 02:37:46,992 | INFO     | [3f57af9f] <-  200 | 14ms
+2026-07-28 02:37:47,010 | INFO     | [fc9160b4] ->  POST /chat
+2026-07-28 02:37:47,016 | INFO     | [fc9160b4] <-  403 | 5ms
+2026-07-28 02:37:58,546 | INFO     | [bb1b5649] ->  GET /health
+2026-07-28 02:37:58,551 | INFO     | [bb1b5649] <-  200 | 4ms
+2026-07-28 02:38:01,250 | INFO     | [4d9629ca] ->  GET /health
+2026-07-28 02:38:01,260 | INFO     | [4d9629ca] <-  200 | 10ms
+2026-07-28 02:38:19,039 | INFO     | [f0689e8f] ->  GET /
+2026-07-28 02:38:19,042 | INFO     | [f0689e8f] <-  404 | 2ms
+2026-07-28 02:38:19,204 | INFO     | [4cee8e90] ->  GET /favicon.ico
+2026-07-28 02:38:19,207 | INFO     | [4cee8e90] <-  404 | 1ms
+2026-07-28 02:38:22,663 | INFO     | [7404594d] ->  GET /docs
+2026-07-28 02:38:22,664 | INFO     | [7404594d] <-  200 | 1ms
+2026-07-28 02:38:22,974 | INFO     | [b6f4aadb] ->  GET /openapi.json
+2026-07-28 02:38:23,003 | INFO     | [b6f4aadb] <-  200 | 28ms
+2026-07-28 02:38:42,360 | INFO     | [2d5fd61f] ->  POST /chat
+2026-07-28 02:38:42,366 | INFO     | [2d5fd61f] <-  403 | 6ms
+2026-07-28 02:49:15,552 | INFO     | [f8331629] ->  GET /health
+2026-07-28 02:49:15,557 | INFO     | [f8331629] <-  200 | 5ms
+2026-07-28 02:49:18,498 | INFO     | [78009538] ->  GET /health
+2026-07-28 02:49:18,501 | INFO     | [78009538] <-  200 | 3ms
+2026-07-28 02:49:25,787 | INFO     | [8047c850] ->  GET /health
+2026-07-28 02:49:25,791 | INFO     | [8047c850] <-  200 | 2ms
+2026-07-28 02:49:48,773 | INFO     |  Admin key seeded
+2026-07-28 02:49:57,231 | INFO     | [d2c1a961] ->  GET /health
+2026-07-28 02:49:57,242 | INFO     | [d2c1a961] <-  200 | 10ms
+2026-07-28 02:50:00,879 | INFO     | [a9666de9] ->  GET /health
+2026-07-28 02:50:00,888 | INFO     | [a9666de9] <-  200 | 9ms
+2026-07-28 02:50:02,801 | INFO     | [309e1826] ->  GET /health
+2026-07-28 02:50:02,805 | INFO     | [309e1826] <-  200 | 4ms
+2026-07-28 02:50:02,826 | INFO     | [01e605b9] ->  POST /chat
+2026-07-28 02:50:02,832 | INFO     | [01e605b9] <-  403 | 6ms
+2026-07-28 02:51:53,252 | INFO     |  Admin key seeded
+2026-07-28 02:51:57,585 | INFO     | [35ca9757] ->  GET /health
+2026-07-28 02:51:57,595 | INFO     | [35ca9757] <-  200 | 10ms
+2026-07-28 02:52:00,864 | INFO     | [3d50753b] ->  GET /health
+2026-07-28 02:52:00,870 | INFO     | [3d50753b] <-  200 | 6ms
+2026-07-28 02:52:02,714 | INFO     | [e2540571] ->  GET /health
+2026-07-28 02:52:02,719 | INFO     | [e2540571] <-  200 | 5ms
+2026-07-28 02:52:02,749 | INFO     | [89dee812] ->  POST /chat
+2026-07-28 02:52:02,756 | INFO     | [89dee812] <-  403 | 6ms
+2026-07-28 02:52:05,965 | INFO     | [a4c2f305] ->  GET /health
+2026-07-28 02:52:05,970 | INFO     | [a4c2f305] <-  200 | 4ms
+2026-07-28 02:52:05,989 | INFO     | [3731c296] ->  POST /chat
+2026-07-28 02:52:05,994 | INFO     | [3731c296] <-  403 | 4ms
+2026-07-28 02:52:07,168 | INFO     | [b1188803] ->  GET /health
+2026-07-28 02:52:07,172 | INFO     | [b1188803] <-  200 | 4ms
+2026-07-28 02:52:07,188 | INFO     | [991c8bb9] ->  POST /chat
+2026-07-28 02:52:07,192 | INFO     | [991c8bb9] <-  403 | 4ms
+2026-07-28 03:02:55,383 | INFO     | [75aace15] -> Chat request | session=637fc03d-2441-4167-82b5-e55e5bc4dee8
+2026-07-28 03:02:55,832 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:02:56,257 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:02:56,292 | INFO     | [75aace15] <- Completed | 488ms
+2026-07-28 03:03:32,947 | INFO     | [a3fd21c8] -> Chat request | session=637fc03d-2441-4167-82b5-e55e5bc4dee8
+2026-07-28 03:03:33,283 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:03:33,666 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:03:33,701 | INFO     | [a3fd21c8] <- Completed | 335ms
+2026-07-28 03:07:24,585 | INFO     | [038f2994] -> Chat request | session=eab41784-c033-4fe2-ba19-57429e9fdd30
+2026-07-28 03:07:26,009 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:07:26,533 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:07:26,552 | INFO     | [038f2994] <- Completed | 188ms
+2026-07-28 03:07:33,172 | INFO     | [f0f32bd1] -> Chat request | session=eab41784-c033-4fe2-ba19-57429e9fdd30
+2026-07-28 03:07:34,530 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:07:35,086 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:07:35,120 | INFO     | [f0f32bd1] <- Completed | 268ms
+2026-07-28 03:07:42,749 | INFO     | [7ef233a2] -> Chat request | session=eab41784-c033-4fe2-ba19-57429e9fdd30
+2026-07-28 03:07:44,062 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:07:44,483 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 03:07:44,504 | INFO     | [7ef233a2] <- Completed | 168ms
+2026-07-28 05:38:12,657 | INFO     | [0c4927a9] -> Chat request | session=b924fca3-bb7f-44a7-8798-8e265470d77d
+2026-07-28 05:38:14,631 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 05:38:15,544 | INFO     | HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-28 05:38:15,585 | INFO     | [0c4927a9] <- Completed | 505ms
