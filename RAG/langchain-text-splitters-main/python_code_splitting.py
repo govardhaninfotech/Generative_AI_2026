@@ -1,7 +1,7 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter,Language
+from langchain_text_splitters import RecursiveCharacterTextSplitter,Language
 
 text = """
-class Student:
+class S`tudent:
     def __init__(self, name, age, grade):
         self.name = name
         self.age = age

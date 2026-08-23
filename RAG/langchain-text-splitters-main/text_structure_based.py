@@ -1,4 +1,5 @@
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+#from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 text = """
 Space exploration has led to incredible scientific discoveries. From landing on the Moon to exploring Mars, humanity continues to push the boundaries of what’s possible beyond our planet.
@@ -8,7 +9,7 @@ These missions have not only expanded our knowledge of the universe but have als
 
 # Initialize the splitter
 splitter = RecursiveCharacterTextSplitter(
-    chunk_size=500,
+    chunk_size=100,
     chunk_overlap=0,
 )
 
@@ -16,4 +17,6 @@ splitter = RecursiveCharacterTextSplitter(
 chunks = splitter.split_text(text)
 
 print(len(chunks))
-print(chunks)
+# print(chunks)
+for i in chunks:
+    print(len(i))
