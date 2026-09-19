@@ -1,0 +1,265 @@
+{
+  "name": "email workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Garba Registration",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Name"
+            },
+            {
+              "fieldLabel": "Email ID",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mobile Number",
+              "fieldType": "number"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        1008,
+        48
+      ],
+      "id": "23f2fcf2-bde4-491c-9555-3f7bf03aa291",
+      "name": "On form submission",
+      "webhookId": "4a0552f6-26ad-4418-bd91-2ad83aa13ea9",
+      "alwaysOutputData": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1M5bBprbIcsoItLp5xCrHM0yg2lb7QxOCQqeKhdLTTkI",
+          "mode": "list",
+          "cachedResultName": "User Details",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1M5bBprbIcsoItLp5xCrHM0yg2lb7QxOCQqeKhdLTTkI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1217562705,
+          "mode": "list",
+          "cachedResultName": "Garba Registration",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1M5bBprbIcsoItLp5xCrHM0yg2lb7QxOCQqeKhdLTTkI/edit#gid=1217562705"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Mobile Number": "={{ $('On form submission').item.json['Mobile Number'] }}",
+            "Email": "={{ $('On form submission').item.json['Email ID'] }}",
+            "User Name": "={{ $('On form submission').item.json.Name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "No",
+              "displayName": "No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "User Name",
+              "displayName": "User Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mobile Number",
+              "displayName": "Mobile Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1712,
+        48
+      ],
+      "id": "b650080f-2fb0-4897-b66e-27ce88878d18",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "v7cUV6wssN8tkwv0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Welcome to Garba Classes",
+        "message": "= <!DOCTYPE html> <html lang=\"en\"> <head>   <meta charset=\"UTF-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">   <title>Garba Class Registration</title> </head> <body style=\"margin:0; padding:0; background-color:#fff7ed; font-family:Arial,sans-serif; color:#431407;\">    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"          style=\"background-color:#fff7ed; padding:30px 10px;\">     <tr>       <td align=\"center\">          <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\"                style=\"max-width:600px; background-color:#ffffff;                       border-radius:12px; overflow:hidden;\">            <!-- Header -->           <tr>             <td align=\"center\"                 style=\"background-color:#9a3412; padding:30px 20px;\">               <h1 style=\"color:#ffffff; margin:0; font-size:28px;\">                 🎉 Welcome to Our Garba Family! 🎉               </h1>               <p style=\"color:#ffedd5; margin:12px 0 0;\">                 Garba Class Registration Confirmed               </p>             </td>           </tr>            <!-- Content -->           <tr>             <td style=\"padding:30px 25px;\">                <p>Dear <strong>{{ $json['User Name'] }}</strong>,</p>                <p>                 Thank you for registering for our Garba classes!                 We are excited to welcome you to our festive family.               </p>                <h3 style=\"color:#9a3412;\">Your Registration Details</h3>                <table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\"                      style=\"background-color:#fff7ed; border-radius:8px;\">                 <tr>                   <td><strong>Name</strong></td>                   <td> {{ $json['User Name'] }} </td>                 </tr>                 <tr>                   <td><strong>Registration ID</strong></td>                   <td>{{ $('Summarize').item.json.count_No }} </td>                 </tr>                 <tr>                   <td><strong>Batch</strong></td>                   <td>{{ $json.batch }}</td>                 </tr>               </table>                <p>                 We look forward to dancing, celebrating, and creating                 wonderful memories together. Further class details will                 be shared with you shortly.               </p>                <p style=\"text-align:center; color:#9a3412; font-weight:bold;\">                 Garba • Music • Celebration • Togetherness               </p>                <p style=\"text-align:center; font-size:18px; font-weight:bold;\">                 Garba Ramva Aavjo! 💃🕺               </p>                <p style=\"text-align:center;\">                 Ganpati Bappa Morya! 🙏               </p>              </td>           </tr>            <!-- Footer -->           <tr>             <td align=\"center\"                 style=\"background-color:#ffedd5; padding:18px;\">               <p style=\"margin:0; font-size:12px; color:#7c2d12;\">                 Thank you for registering with us!               </p>             </td>           </tr>          </table>        </td>     </tr>   </table>  </body> </html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1936,
+        48
+      ],
+      "id": "3e88378a-34b3-4650-b9b0-8f9556dfab3a",
+      "name": "Send a message",
+      "webhookId": "074c533a-be06-4c5c-af6c-37a5267b1e30",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NFjdp8cCaAwVQKEI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1M5bBprbIcsoItLp5xCrHM0yg2lb7QxOCQqeKhdLTTkI",
+          "mode": "list",
+          "cachedResultName": "User Details",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1M5bBprbIcsoItLp5xCrHM0yg2lb7QxOCQqeKhdLTTkI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1217562705,
+          "mode": "list",
+          "cachedResultName": "Garba Registration",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1M5bBprbIcsoItLp5xCrHM0yg2lb7QxOCQqeKhdLTTkI/edit#gid=1217562705"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1232,
+        48
+      ],
+      "id": "2c4fd67d-ba01-4b5c-9b56-556368c93897",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "v7cUV6wssN8tkwv0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "field": "=No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        1456,
+        48
+      ],
+      "id": "38a9b2bd-a2ce-4a56-8de8-be706f5054d6",
+      "name": "Summarize"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "51b57f55-6fe7-4484-8147-88456cd74d83",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cba929c45321d7fbe1dc3738ff433336384cb4d773f88c59a053ec4d47c33f5b"
+  },
+  "nodeGroups": [],
+  "id": "KK4EMrPPwkAlrOjL",
+  "tags": []
+}

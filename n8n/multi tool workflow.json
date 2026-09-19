@@ -1,0 +1,272 @@
+{
+  "name": "multi tool workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "03351fb4-a4e3-4ee4-b88f-0a40e3ac2d28",
+      "name": "When chat message received",
+      "webhookId": "aa45696a-5eec-4d7b-9a50-659da082e309"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful sales assistant.\n\nUnderstand the customer's requirements and use the available tools when needed.\n\nFor product recommendations, check Google Sheets first.\nUse web search when current information is needed.\nUse Gmail only when the customer asks you to send an email.\nUse Google Calendar when the customer asks to create a calendar event.\n\nGive clear and concise answers.\n\nYou are a product assistant.\n\nTOOL RULES:\n1. For product recommendations, ALWAYS use the Google Sheets tool first to check the available products and prices.\n2. If the user asks for current prices, current availability, latest models, or web information, ALWAYS use Brave Search.\n3. If the user asks to send the result by email, ALWAYS use the Gmail tool.\n4. Do not answer a product recommendation only from your own knowledge when the Google Sheets tool is available.\n5. Use tools when the user's request requires them.\n6. After using the tools, give a short and clear answer."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b2051a07-f569-45ec-aac8-c82d3d4ed2cb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "03be38d9-24bb-46b6-8dc7-e32e111600cb",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1YanDrSBNfsNv8851mTsUks_8uvvl2YDv9cG85e00Klk",
+          "mode": "list",
+          "cachedResultName": "Products",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YanDrSBNfsNv8851mTsUks_8uvvl2YDv9cG85e00Klk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YanDrSBNfsNv8851mTsUks_8uvvl2YDv9cG85e00Klk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        208
+      ],
+      "id": "c75a04d8-c99b-4801-8b48-3df0e80879ce",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "v7cUV6wssN8tkwv0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "additionalParameters": {}
+      },
+      "type": "@brave/n8n-nodes-brave-search.braveSearchTool",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        304
+      ],
+      "id": "dd8d2b8d-2e0e-4cfe-8caf-ddded98244d0",
+      "name": "Brave Search",
+      "credentials": {
+        "braveSearchApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Calendar', `The calendar where the event should be created.`, 'string') }}",
+          "mode": "id"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `The date and time when the event should start.`, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `The date and time when the event should end.`, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `A short title for the event.`, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        288
+      ],
+      "id": "1d96eebb-e030-433e-a534-08bbbfd4bdec",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cpIMYDgDaO6jWn3p",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', `Customer's email address`, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', `A suitable email subject based on the customer's request.`, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', `The email message to send to the customer based on their request.`, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        128
+      ],
+      "id": "98ab6373-3e3a-4cf3-94a7-de23035d8257",
+      "name": "Send a message in Gmail",
+      "webhookId": "51c6d4bf-4d7a-4cdd-b881-69f877f7315c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NFjdp8cCaAwVQKEI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        224
+      ],
+      "id": "e7188352-b6d3-4b21-9355-68466cc5b77e",
+      "name": "Simple Memory1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brave Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "11d834ce-65f7-4bdd-93e6-33064be652e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cba929c45321d7fbe1dc3738ff433336384cb4d773f88c59a053ec4d47c33f5b"
+  },
+  "nodeGroups": [],
+  "id": "Ky34awkw5XUDeQSm",
+  "tags": []
+}
