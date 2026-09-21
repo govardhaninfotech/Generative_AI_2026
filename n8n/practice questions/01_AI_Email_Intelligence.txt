@@ -1,6 +1,3 @@
-n8n PRACTICAL WORKFLOW 1 AI EMAIL INTELLIGENCE AND AUTOMATIC ROUTING For
-non-technical learners
-
 PURPOSE Build an automation that reads incoming emails, uses AI to
 understand the message, classifies it, and routes it to the correct
 action.

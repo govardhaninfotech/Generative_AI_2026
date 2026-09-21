@@ -1,0 +1,134 @@
+PURPOSE Build an assistant that answers questions using company
+documents instead of relying only on general AI knowledge.
+
+REAL-WORLD EXAMPLE Govardhan Institute has: - Course information - Fee
+documents - Policies - SOPs - Training material - Internal FAQs
+
+A staff member asks: “What is the duration of the Python course?”
+
+The assistant searches the approved documents and answers from that
+information.
+
+SYLLABUS COVERAGE Module 3: Knowledge Grounding and Internal Assistants
+Module 1: Agents Module 2: Workflow design Module 7: Reliability and
+governance
+
+CORE IDEA Normal AI: Question -> AI memory -> Answer
+
+Grounded AI: Question -> Search company knowledge -> Relevant content ->
+AI -> Answer
+
+BASIC SETUP Prepare 2-5 small documents. Example: 1. Python_Course.txt
+2. AI_Course.txt 3. Institute_Policy.txt
+
+Keep the documents simple for the first classroom demonstration.
+
+WORKFLOW A - KNOWLEDGE INGESTION This workflow prepares documents for
+search.
+
+STEP 1 - CREATE WORKFLOW Name: Company Knowledge Ingestion
+
+STEP 2 - ADD DOCUMENT SOURCE Use a source such as: Read/Load Files,
+Google Drive, or another file source available in your n8n version.
+
+For a classroom test, start with a local/static document source if
+available.
+
+STEP 3 - ADD DEFAULT DATA LOADER Node: Default Data Loader
+
+Purpose: Turns document content into text chunks that can be indexed.
+
+Use: Document -> text/chunks
+
+STEP 4 - ADD EMBEDDINGS Node: OpenAI Embeddings
+
+Connect: Default Data Loader -> Embeddings/Vector Store as required by
+your n8n version.
+
+Purpose: Embeddings convert text into numerical representations so
+similar questions can find similar document sections.
+
+STEP 5 - ADD VECTOR STORE Use: Simple Vector Store or another vector
+store available in your n8n version.
+
+Connect: Document Loader + Embeddings -> Vector Store
+
+Use a clear collection/key such as: govardhan_knowledge_demo
+
+IMPORTANT: For classroom testing, use a small document set first. Do not
+start with hundreds of files.
+
+WORKFLOW B - QUESTION ANSWER ASSISTANT
+
+STEP 6 - CREATE NEW WORKFLOW Name: Company Knowledge Assistant
+
+STEP 7 - ADD CHAT TRIGGER Node: When Chat Message Received
+
+Purpose: Receives the student’s question.
+
+STEP 8 - ADD AI AGENT Node: AI Agent
+
+Add: OpenAI Chat Model
+
+System Message: You are an internal company knowledge assistant.
+
+Answer questions using the connected company knowledge source.
+
+Rules: 1. Use the knowledge source before answering company-specific
+questions. 2. Do not invent company policies, prices, course durations,
+or procedures. 3. If the answer is not found in the knowledge source,
+say: “I could not find this information in the provided company
+documents.” 4. Keep answers concise. 5. Mention the document/source when
+possible.
+
+STEP 9 - CONNECT VECTOR STORE AS A TOOL Use the vector store
+retrieval/tool option supported by your n8n version.
+
+The important idea is: AI Agent -> Knowledge Search Tool -> Vector Store
+
+STEP 10 - TEST Ask: “What is the duration of the Python course?”
+
+Then ask: “What is the refund policy?”
+
+Then ask a question that is deliberately NOT in the documents: “What is
+the salary of the institute director?”
+
+Expected behavior: The assistant should not invent the answer.
+
+STEP 11 - ADD SOURCE INFORMATION If your retrieval node returns document
+metadata, expose the file/document name to the AI.
+
+Example: Source: Python_Course.txt
+
+This teaches students that enterprise assistants should be traceable.
+
+STEP 12 - OPTIONAL FALLBACK Add an IF/Switch condition for: No relevant
+document found
+
+Then respond: “I could not find this information in the approved
+knowledge base.”
+
+IMPORTANT CONCEPTS TO TEACH 1. Data loading 2. Chunking 3. Embeddings 4.
+Vector search 5. Retrieval 6. Grounded answer 7. Source attribution 8.
+Unknown-answer handling
+
+COMMON PROBLEMS Problem: AI answers without using documents. Fix: Make
+the knowledge search a required tool in the system instructions.
+
+Problem: Wrong answer. Fix: Improve document quality, chunking,
+retrieval settings, and instructions.
+
+Problem: No documents found. Fix: Check ingestion and vector store data.
+
+Problem: Students confuse embeddings with the answer. Explain:
+Embeddings are a search representation, not the final answer.
+
+FINAL CLASSROOM FLOW Documents -> Loader -> Chunks -> Embeddings ->
+Vector Store
+
+User Question -> Chat Trigger -> AI Agent -> Vector Search -> Relevant
+Document Chunks -> AI Answer
+
+TEACHING MESSAGE “Do not ask AI to remember your company’s information.
+Give AI a reliable knowledge source and make it retrieve before
+answering.”
