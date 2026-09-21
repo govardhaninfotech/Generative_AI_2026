@@ -1,0 +1,138 @@
+n8n PRACTICAL WORKFLOW 3 AI LEAD QUALIFICATION WITH HUMAN APPROVAL For
+non-technical learners
+
+PURPOSE Automatically understand a new lead, extract important
+information, categorize the lead, store it, and ask a human for approval
+before sending an important response.
+
+REAL-WORLD EXAMPLE A company receives: “I am from ABC Pvt Ltd. We have
+50 employees and need AI training. Our budget is around Rs 2 lakh. We
+want training next month.”
+
+AI should understand: - Company - Employee count - Requirement -
+Budget - Timing - Lead priority
+
+Then: AI -> Qualification -> Human approval -> Email
+
+SYLLABUS COVERAGE Module 1: Agents Module 2: Structured workflows Module
+4: Integrations Module 7: Governance and human oversight
+
+BASIC SETUP Create Google Sheet: Name: Lead Management Sheet: Sheet1
+Columns: Name | Email | Company | Requirement | Employees | Budget |
+Timeline | Lead Type | Priority | Status | Notes
+
+Connect: OpenAI Google Sheets Gmail Optional Slack Optional human
+approval mechanism supported by your n8n version
+
+STEP 1 - CREATE WORKFLOW Name: AI Lead Qualification
+
+STEP 2 - ADD FORM TRIGGER Use: Form Trigger
+
+Fields: Name Email Company Requirement Employees Budget Timeline
+
+Keep the form simple.
+
+STEP 3 - ADD AI AGENT OR INFORMATION EXTRACTOR Purpose: Turn form text
+and fields into structured business information.
+
+System Message: You are a lead qualification assistant.
+
+Extract only the information provided by the user.
+
+Return: name email company requirement employees budget timeline
+lead_type priority
+
+Do not invent missing values.
+
+Lead type must be: Corporate Individual Unknown
+
+Priority must be: High Medium Low
+
+STEP 4 - STRUCTURED OUTPUT Use a structured output/parser option if
+available.
+
+Expected: { “name”: “Rahul”, “email”: “rahul@example.com”, “company”:
+“ABC Pvt Ltd”, “requirement”: “AI training”, “employees”: 50, “budget”:
+200000, “timeline”: “Next month”, “lead_type”: “Corporate”, “priority”:
+“High” }
+
+STEP 5 - ADD VALIDATION Use IF or Switch.
+
+Check: - Email exists - Requirement exists - Lead type is valid - Budget
+is a number if provided
+
+If invalid: Send to a manual review/error branch.
+
+STEP 6 - STORE LEAD Google Sheets: Operation: Append Row
+
+Map every extracted field.
+
+Status: Needs Approval
+
+IMPORTANT: Append Row adds a new lead. Get Row(s) is for reading
+existing records.
+
+STEP 7 - HUMAN APPROVAL Add the n8n approval/human review mechanism
+available in your version.
+
+Purpose: The AI can prepare the recommendation, but a human decides
+whether to contact the lead.
+
+Approval message: New high-priority lead:
+
+Company: [company] Requirement: [requirement] Budget: [budget] Timeline:
+[timeline]
+
+Approve sending the follow-up email?
+
+STEP 8 - APPROVED BRANCH If approved: Gmail -> Send Email
+
+Example: Hello [Name],
+
+Thank you for your enquiry about [Requirement]. We have received your
+request and our team will contact you shortly.
+
+Regards, Training Team
+
+STEP 9 - REJECTED BRANCH If not approved: Update Google Sheet: Status =
+Rejected / Needs Review
+
+Do not send the customer email.
+
+STEP 10 - UPDATE STATUS Approved: Status = Contacted
+
+Rejected: Status = Not Contacted
+
+STEP 11 - OPTIONAL SALES NOTIFICATION Send Slack/Gmail notification: New
+approved high-priority lead received.
+
+STEP 12 - TEST CASES
+
+Test 1: Corporate: 50 employees, budget Rs 200000. Expected: Corporate /
+High
+
+Test 2: Individual student: One learner, small budget. Expected:
+Individual / Medium or Low depending on rules.
+
+Test 3: Missing email. Expected: Validation failure -> Human review.
+
+TEACHING POINT AI should not directly make every business decision.
+
+Safer enterprise pattern: Input -> AI extraction -> Validation -> Human
+approval -> Action -> Logging
+
+COMMON PROBLEMS AI invents a budget: Tell it to return null/unknown when
+data is missing.
+
+Approval never arrives: Check the approval node and its
+credentials/notification method.
+
+Wrong Google Sheet row: Verify field mapping and use Append Row for new
+leads.
+
+EMAIL IS SENT TOO EARLY: Make sure the Gmail node is AFTER the approval
+branch.
+
+FINAL FLOW Form -> AI Extraction -> Structured Output -> Validation ->
+Google Sheets -> Human Approval -> Approved? Yes -> Gmail -> Update
+Sheet No -> Update Sheet

@@ -1,0 +1,132 @@
+n8n PRACTICAL WORKFLOW 4 AI MEETING -> ACTION AUTOMATION For
+non-technical learners
+
+PURPOSE Turn meeting notes/transcripts into a summary, action items,
+calendar events, and team notifications.
+
+REAL-WORLD EXAMPLE Meeting text: “We will conduct an AI workshop on 5
+October at 11 AM. Dhruv will prepare the presentation. Rahul will
+contact the college. We need a Google Meet link.”
+
+The workflow should understand this and create useful actions
+automatically.
+
+SYLLABUS COVERAGE Module 2: Workflow design Module 4: Cross-tool
+integration Module 5: Multi-step transformation Module 7: Reliability
+and approval
+
+TOOLS - Form Trigger or Chat Trigger - AI Agent - OpenAI Chat Model -
+Structured Output - Google Calendar - Google Sheets - Gmail - Optional
+Slack
+
+CREATE THESE SHEETS Spreadsheet: Meeting Action Log
+
+Columns: Meeting | Date | Time | Summary | Owner | Task | Task Status |
+Calendar Status
+
+STEP 1 - CREATE WORKFLOW Name: AI Meeting to Action
+
+STEP 2 - ADD INPUT TRIGGER For the classroom: Use Form Trigger.
+
+Fields: Meeting Title Meeting Date Meeting Time Meeting Notes
+
+Students can paste a transcript into Meeting Notes.
+
+STEP 3 - ADD AI AGENT Connect: Form Trigger -> AI Agent
+
+Add: OpenAI Chat Model
+
+System Message: You are a meeting action extraction assistant.
+
+Read the meeting notes and extract only information that is clearly
+present.
+
+Return: 1. short_summary 2. decisions 3. action_items 4. events
+
+Each action item should contain: owner task
+
+Each event should contain: title date time description
+
+Do not invent people, dates, or decisions.
+
+Keep the output concise.
+
+STEP 4 - STRUCTURED OUTPUT Use Structured Output Parser or the
+structured-output option available in your n8n version.
+
+Example: { “short_summary”: “AI workshop planned.”, “decisions”:
+[“Workshop will be conducted on 5 October.”], “action_items”: [
+{“owner”:“Dhruv”,“task”:“Prepare presentation”},
+{“owner”:“Rahul”,“task”:“Contact college”} ], “events”: [ { “title”:“AI
+Workshop”, “date”:“2026-10-05”, “time”:“11:00”, “description”:“AI
+workshop” } ] }
+
+STEP 5 - SPLIT ACTION ITEMS Use: Split Out
+
+Purpose: Turn the action_items array into separate items.
+
+Connect: AI structured output -> Split Out
+
+Then each action becomes one record.
+
+STEP 6 - LOG TASKS Google Sheets: Operation: Append Row
+
+Map: Meeting Owner Task Task Status = New
+
+STEP 7 - CREATE CALENDAR EVENT Use: Google Calendar -> Create Event
+
+Important fields: - Calendar: your chosen calendar - Start: date + time
+from AI - End: choose a reasonable end time or ask for end time in the
+form - Title: event title - Description: event description
+
+Do not allow AI to invent a date if the meeting does not contain one.
+
+STEP 8 - SEND SUMMARY EMAIL Gmail -> Send Message
+
+To: Your test email or team email.
+
+Subject: Meeting Summary - [Meeting Title]
+
+Body: Summary Decisions Action items
+
+STEP 9 - OPTIONAL SLACK Send a concise Slack message: Meeting completed.
+New tasks created: - Dhruv: Prepare presentation - Rahul: Contact
+college
+
+STEP 10 - VALIDATION Before creating a calendar event, check: - date
+exists - time exists - title exists
+
+If missing: Send to manual review instead of creating a wrong event.
+
+STEP 11 - TEST
+
+Input: Meeting Title: AI Workshop Date: 2026-10-05 Time: 11:00 Notes:
+Dhruv will prepare the presentation. Rahul will contact the college. We
+will conduct an AI workshop.
+
+Expected: 1. Summary generated. 2. Two tasks created. 3. Calendar event
+created. 4. Email sent. 5. Sheet updated.
+
+COMMON PROBLEMS Calendar event uses wrong date: Check the date format
+and timezone.
+
+AI creates people who were never mentioned: Strengthen “do not invent
+information.”
+
+Multiple tasks appear in one sheet row: Use Split Out before Google
+Sheets.
+
+Email has too much information: Ask the AI for a short summary and keep
+the email template fixed.
+
+TEACHING POINT One meeting note can become several business actions.
+
+This demonstrates: Understand -> Extract -> Transform -> Route -> Act ->
+Log
+
+FINAL FLOW Form -> AI Agent -> Structured Output -> Split Out -> Google
+Sheets
+
+And separately: Structured Event -> Validation -> Google Calendar
+
+Summary -> Gmail -> Optional Slack

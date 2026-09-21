@@ -1,0 +1,151 @@
+n8n PRACTICAL WORKFLOW 5 AI INVOICE DOCUMENT PROCESSING PIPELINE For
+non-technical learners
+
+PURPOSE Automatically receive an invoice, extract information from the
+document, validate the extracted data, store it, and request approval.
+
+REAL-WORLD EXAMPLE A vendor sends a PDF invoice by email.
+
+Invoice: Vendor: ABC Computers Invoice: INV-1025 Subtotal: Rs 65,000
+GST: Rs 11,700 Total: Rs 76,700
+
+Workflow: Email -> Attachment -> Text Extraction -> AI Extraction ->
+Validation -> Sheet -> Approval
+
+SYLLABUS COVERAGE Module 2: Structured workflow design Module 4:
+Cross-tool integration Module 5: Multi-step pipelines Module 7:
+Reliability, validation, governance
+
+SETUP Create Google Sheet: Invoice Register
+
+Columns: Vendor | Invoice Number | Invoice Date | Subtotal | Tax | Total
+| Validation | Approval | Status | Notes
+
+Connect: Gmail OpenAI Google Sheets Human approval mechanism available
+in your n8n version
+
+STEP 1 - CREATE WORKFLOW Name: AI Invoice Processing
+
+STEP 2 - ADD GMAIL TRIGGER Node: Gmail Trigger
+
+Purpose: Start when an invoice email arrives.
+
+For the first test, use a dedicated test mailbox or filter.
+
+STEP 3 - GET THE ATTACHMENT Depending on your Gmail node/version: -
+enable download attachments, or - use the Gmail Get Message operation
+after the trigger.
+
+The goal is to have the PDF available as binary data.
+
+STEP 4 - FILTER PDF ATTACHMENTS Use: IF
+
+Condition: Attachment MIME type is application/pdf or file extension is
+.pdf.
+
+If false: Stop or log: “Not an invoice PDF.”
+
+STEP 5 - EXTRACT PDF TEXT Use: Extract From File
+
+Choose the PDF/document extraction operation available in your n8n
+version.
+
+Input: Binary PDF data from the Gmail node.
+
+Output: Extracted text.
+
+IMPORTANT: If your n8n version uses a different PDF extraction node,
+choose the node whose job is “extract text from file/PDF.”
+
+STEP 6 - ADD AI EXTRACTION Use: AI Agent or Information Extractor
+
+System Message: You are an invoice data extraction assistant.
+
+Extract only information visible in the invoice.
+
+Return: vendor invoice_number invoice_date subtotal tax total
+
+Rules: - Never invent values. - If a value is missing, return null. -
+Preserve invoice number exactly. - Return numbers as numbers where
+possible.
+
+STEP 7 - STRUCTURED OUTPUT Expected: { “vendor”: “ABC Computers”,
+“invoice_number”: “INV-1025”, “invoice_date”: “2026-09-20”, “subtotal”:
+65000, “tax”: 11700, “total”: 76700 }
+
+STEP 8 - VALIDATE MATHEMATICS Use: Code node or IF conditions.
+
+Simple rule: subtotal + tax should equal total.
+
+Example: 65000 + 11700 = 76700
+
+If correct: Validation = Passed
+
+If incorrect: Validation = Failed
+
+IMPORTANT: The exact expression depends on the field names in your
+structured output. Use the expression editor to select the fields rather
+than typing unknown field paths.
+
+STEP 9 - CHECK REQUIRED FIELDS Use IF: Vendor exists AND invoice number
+exists AND total exists.
+
+If missing: Validation = Failed.
+
+STEP 10 - VALID INVOICE BRANCH Google Sheets: Operation = Append Row
+
+Store: Vendor Invoice number Date Subtotal Tax Total Validation = Passed
+Approval = Pending Status = Awaiting Approval
+
+STEP 11 - INVALID INVOICE BRANCH Google Sheets: Append Row
+
+Validation = Failed Status = Manual Review
+
+Then Gmail/Slack: “Invoice requires manual review.”
+
+Do NOT approve an invalid invoice automatically.
+
+STEP 12 - HUMAN APPROVAL For valid invoices, request approval.
+
+Approval message: Invoice: Vendor: [vendor] Invoice: [invoice number]
+Total: [total] Validation: Passed
+
+Approve this invoice?
+
+STEP 13 - APPROVED BRANCH Update Google Sheet: Approval = Approved
+Status = Approved
+
+Optionally send Gmail: Invoice [number] approved.
+
+STEP 14 - REJECTED BRANCH Update: Approval = Rejected Status = Rejected
+
+Do not send approval confirmation.
+
+STEP 15 - TEST Test A: Correct invoice: Subtotal 65000 Tax 11700 Total
+76700 Expected: Passed.
+
+Test B: Wrong total: Subtotal 65000 Tax 11700 Total 80000 Expected:
+Failed -> Manual Review.
+
+Test C: Missing invoice number. Expected: Failed -> Manual Review.
+
+COMMON PROBLEMS PDF text is empty: The PDF may be scanned. Use
+OCR/document extraction supported by your environment.
+
+Numbers are wrong: Use structured extraction and validation.
+
+AI invents fields: Use “return null when missing.”
+
+Invoice gets approved despite failed validation: Check that approval is
+connected only to the Passed branch.
+
+TEACHING POINT This is not: “AI reads invoice and approves it.”
+
+It is: Read -> Extract -> Validate -> Decide -> Human Approval -> Action
+-> Log
+
+That distinction teaches reliable AI automation.
+
+FINAL FLOW Gmail Trigger -> Attachment -> PDF Filter -> Extract From
+File -> AI Extraction -> Structured Output -> Validation -> Passed /
+Failed -> Google Sheets -> Human Approval -> Approved / Rejected

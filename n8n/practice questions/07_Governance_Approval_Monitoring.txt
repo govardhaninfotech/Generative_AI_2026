@@ -1,0 +1,185 @@
+n8n PRACTICAL WORKFLOW 7 AI GOVERNANCE, APPROVAL, VALIDATION AND
+MONITORING Production-ready safety layer For non-technical learners
+
+PURPOSE Take an existing AI workflow and make it safer and more reliable
+before allowing it to perform important business actions.
+
+REAL-WORLD EXAMPLE An AI prepares an email, quotation, refund, invoice
+approval, or report.
+
+Do not immediately: AI -> Customer
+
+Instead: AI -> Validate -> Human Review -> Approved? -> Action -> Log
+
+SYLLABUS COVERAGE Module 7: Enterprise Deployment and Governance Also
+reinforces Modules 2, 4, 5, and 6.
+
+WHY THIS WORKFLOW MATTERS AI can: - misunderstand instructions - extract
+incorrect values - invent missing information - send the wrong message -
+make a wrong classification
+
+Governance adds checkpoints.
+
+FINAL ARCHITECTURE
+
+Input -> AI -> Validation -> Risk Check -> Human Approval -> Approved? |
+Yes v Action -> Logging -> Monitoring
+
+No -> Reject / Revise / Manual Review
+
+STEP 1 - CHOOSE AN EXISTING WORKFLOW Use: AI Lead Qualification or AI
+Invoice Processing
+
+For classroom demonstration, AI Invoice Processing is recommended
+because validation is easy to understand.
+
+STEP 2 - ADD VALIDATION Before any important action, check: - required
+fields exist - values are valid - numbers are consistent - allowed
+categories are used
+
+Example invoice: subtotal + tax = total
+
+Example lead: email exists requirement exists budget is numeric if
+provided
+
+STEP 3 - ADD RISK RULES Use IF/Switch.
+
+Examples: High-value invoice > Rs 1,00,000 -> Human approval required.
+Missing data -> Manual review. Validation failed -> Stop. Normal
+low-risk action -> Continue.
+
+IMPORTANT: These are example classroom rules. Change thresholds
+according to the business requirement.
+
+STEP 4 - HUMAN APPROVAL Use the approval/human-review capability
+available in your n8n version.
+
+Approval message: AI wants to perform this action:
+
+Action: [describe action]
+
+Data: [important values]
+
+Reason: [why AI recommends it]
+
+Approve or reject?
+
+STEP 5 - APPROVED BRANCH Only after approval: Gmail / Slack / Calendar /
+CRM action.
+
+This is the important control: The action node must physically be
+downstream of approval.
+
+STEP 6 - REJECTED BRANCH If rejected: - Update status = Rejected - Store
+reviewer decision - Do not perform the external action
+
+Optional: Ask AI to prepare a revised version.
+
+STEP 7 - LOG EVERY IMPORTANT DECISION Create: AI Governance Log
+
+Columns: Timestamp Workflow Input AI Decision Validation Result Risk
+Level Human Decision Action Taken Error Reviewer
+
+Use: Google Sheets Append Row or your organization’s database/CRM.
+
+STEP 8 - ERROR HANDLING Create a clear error branch.
+
+When an important node fails: Record: - workflow name - node - error -
+timestamp
+
+Then notify the responsible person.
+
+Example: “Invoice workflow failed while extracting PDF. Manual review
+required.”
+
+STEP 9 - MONITORING Teach students to check: 1. Execution history 2.
+Failed executions 3. Which node failed 4. Input/output of the failed
+node 5. Credentials 6. API limits 7. Data format 8. Whether the workflow
+was active/published
+
+STEP 10 - PERMISSIONS Explain: Only give the workflow the access it
+needs.
+
+Example: If an agent only needs to read Google Sheets, do not give it
+unnecessary write permissions.
+
+For email: Use a dedicated business account where possible.
+
+For sensitive documents: Avoid exposing unnecessary information to the
+model.
+
+STEP 11 - DATA PRIVACY Teach students: - Do not put passwords or API
+keys inside prompts. - Do not send sensitive information to tools
+unnecessarily. - Use credentials in n8n credential management. -
+Minimize the data passed between agents. - Keep logs appropriate for the
+organization’s privacy requirements.
+
+STEP 12 - FAILURE TESTS Test deliberately.
+
+Test A: Remove a required field. Expected: Validation fails.
+
+Test B: Give incorrect total. Expected: Validation fails.
+
+Test C: Reject approval. Expected: No external action occurs.
+
+Test D: Break a credential temporarily in a safe test environment.
+Expected: Workflow failure is visible in execution history.
+
+Test E: Give ambiguous information. Expected: Human review or safe
+fallback, not an invented answer.
+
+STEP 13 - CREATE A SIMPLE STATUS SYSTEM Use: Pending Validated Needs
+Review Approved Rejected Completed Failed
+
+Students can see the workflow lifecycle clearly.
+
+STEP 14 - ADD A FINAL SUCCESS MESSAGE After successful action: “Action
+completed successfully. Reference ID: [id]”
+
+Store the reference ID in the log if the connected service provides one.
+
+STEP 15 - TEACH THE GOVERNANCE PATTERN
+
+Bad: AI -> Send Email
+
+Better: AI -> Validate -> Send Email
+
+Best for high-risk action: AI -> Validate -> Risk Check -> Human
+Approval -> Send Email -> Log -> Monitor
+
+STEP 16 - FINAL CLASSROOM CHALLENGE Ask students to take one earlier
+workflow and add:
+
+1.  Validation
+2.  Human approval
+3.  Rejection path
+4.  Error path
+5.  Logging
+6.  Monitoring
+7.  Permission discussion
+
+If they can do this, they have learned how to move from a demo workflow
+toward a more controlled business workflow.
+
+COMMON PROBLEMS Approval is bypassed: Check that the action node is
+connected only after the approval-success branch.
+
+Logs are missing: Check Google Sheets Append Row and field mapping.
+
+AI decision is trusted without validation: Add explicit validation
+before the action.
+
+Workflow fails silently: Check execution history and add error
+notification/logging.
+
+Students put secrets in prompts: Explain that credentials belong in n8n
+credential management, not in prompt text.
+
+FINAL FLOW AI -> Structured Output -> Validation -> Risk Check -> Human
+Approval -> Approved? Yes -> Action -> Log No -> Reject -> Log ->
+Monitoring
+
+FINAL COURSE MESSAGE A successful AI automation is not only about making
+AI work. A business workflow must also be: - understandable -
+controlled - validated - observable - recoverable - appropriately
+permissioned

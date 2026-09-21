@@ -1,0 +1,223 @@
+n8n PRACTICAL WORKFLOW 6 MULTI-AGENT BUSINESS RESEARCH TEAM Supervisor +
+Specialist Agents + Reviewer For non-technical learners
+
+PURPOSE Teach why multiple specialized AI agents can be better organized
+than one agent doing every task.
+
+REAL-WORLD EXAMPLE User: “I want to open a coffee shop in Surat with a
+budget of Rs 10 lakh. Research the market, competitors, customers, and
+prepare a concise report.”
+
+Instead of one AI doing everything: Supervisor delegates.
+
+FINAL ARCHITECTURE
+
+User | v Supervisor Agent | +–> Market Research Agent –> Brave Search |
++–> Competitor Research Agent –> Brave Search | +–> Customer Research
+Agent –> Brave Search | v Report Agent | v Reviewer Agent | v Human
+Approval | v Gmail / Final Output
+
+SYLLABUS COVERAGE Module 2: Workflow design Module 5: Multi-step
+pipelines Module 6: Multi-agent collaboration Module 7: Human oversight
+and reliability
+
+IMPORTANT CONCEPT Tools = capabilities. Agents = responsibilities.
+Multi-agent system = specialized responsibilities coordinated together.
+
+WORKFLOW 1 - MAIN SUPERVISOR
+
+Name: Market Research Agent
+
+STEP 1 - TRIGGER Node: When Chat Message Received
+
+STEP 2 - SUPERVISOR AI AGENT Node: AI Agent
+
+Add: OpenAI Chat Model Simple Memory if conversation context is useful.
+
+Supervisor System Message: You are the Supervisor Agent for a business
+research team.
+
+Delegate only the work that is required.
+
+Specialists: 1. Market Research Agent: market demand, trends, industry
+information, statistics.
+
+2.  Competitor Research Agent: competitors, locations, products,
+    pricing, online presence.
+
+3.  Customer Research Agent: target customers, preferences, pain points,
+    price sensitivity.
+
+Rules: - Use the appropriate specialist. - If the request needs multiple
+research areas, call the required specialists. - Do not repeat the same
+specialist. - Do not perform detailed research yourself when a
+specialist is available. - Keep requests concise. - Ask specialists for
+maximum 5 findings and maximum 3 important sources. - Combine results
+only after specialist research is complete.
+
+STEP 3 - ADD MARKET WORKFLOW TOOL Tool: Call n8n Workflow Tool
+
+Workflow: Market Research Agent part-2
+
+Input: research_request Defined automatically by model.
+
+Tool description: Use this tool to research market demand, trends,
+industry information, statistics, and opportunities for the user’s
+business idea.
+
+STEP 4 - MARKET SPECIALIST WORKFLOW New workflow: Market Research Agent
+part-2
+
+Trigger: When Executed by Another Workflow
+
+Input: research_request Type: String
+
+AI Agent: Prompt/User Message: {{ $json.research_request }}
+
+System: You are the Market Research Specialist. Research only market
+trends, demand, industry information, statistics, and opportunities. Use
+Brave Search. Maximum 3 targeted searches. Return maximum 5 findings and
+maximum 3 sources. Do not invent facts.
+
+Add: OpenAI Chat Model Brave Search
+
+Publish the workflow.
+
+STEP 5 - ADD COMPETITOR TOOL Main workflow: Call n8n Workflow Tool
+
+Workflow: Competitor Research Agent part-2
+
+Input: research_request Defined automatically by model.
+
+Description: Research competitors, locations, products, services,
+pricing, online presence, reviews, and differentiators.
+
+STEP 6 - COMPETITOR SPECIALIST New workflow: Competitor Research Agent
+part-2
+
+Trigger: When Executed by Another Workflow
+
+Input: research_request String
+
+AI Agent: Prompt: {{ $json.research_request }}
+
+System: You are the Competitor Research Specialist. Research only
+competitors and competitor information. Use Brave Search. Maximum 3
+targeted searches. Return maximum 5 findings and maximum 3 sources. Do
+not invent facts.
+
+Add: OpenAI Chat Model Brave Search
+
+Publish.
+
+STEP 7 - CUSTOMER SPECIALIST Create: Customer Research Agent part-2
+
+Trigger: When Executed by Another Workflow
+
+Input: research_request String
+
+AI Agent Prompt: {{ $json.research_request }}
+
+System: You are the Customer Research Specialist. Research target
+customer segments, preferences, pain points, price sensitivity, and
+customer demand indicators. Use Brave Search. Maximum 3 targeted
+searches. Return maximum 5 findings and maximum 3 sources. Do not
+research competitors unless necessary to understand customers.
+
+Add: OpenAI Chat Model Brave Search
+
+Publish.
+
+STEP 8 - CONNECT CUSTOMER TOOL In main Supervisor: Add Call n8n Workflow
+Tool.
+
+Workflow: Customer Research Agent part-2
+
+Input: research_request Defined automatically by model.
+
+Description: Research target customers, preferences, pain points, price
+sensitivity, and customer demand indicators.
+
+STEP 9 - TEST THE THREE AGENTS Use: “I want to open a small coffee shop
+in Surat with a budget of Rs 10 lakh. Research the market, main
+competitors, and target customers.”
+
+Expected: Supervisor calls all three specialists.
+
+STEP 10 - REPORT AGENT After collecting specialist outputs, create a
+Report Agent.
+
+Purpose: Combine research into a concise report.
+
+System: You are a Business Report Writer. Use only the research supplied
+by the specialist agents. Do not add unsupported facts. Create:
+Executive Summary Market Findings Competitor Findings Customer Findings
+Key Numbers Sources
+
+Keep it concise.
+
+STEP 11 - REVIEWER AGENT Create: Reviewer Agent
+
+Purpose: Check the report before delivery.
+
+System: You are a report quality reviewer.
+
+Check: 1. Are claims supported by supplied research? 2. Are important
+sections missing? 3. Are there contradictions? 4. Are numbers clearly
+identified? 5. Are sources present?
+
+Return: PASS or REVISE and maximum 5 corrections.
+
+STEP 12 - HUMAN APPROVAL Send the final report to a human reviewer.
+
+Ask: “Approve this report for delivery?”
+
+Approved: Gmail -> Send report.
+
+Rejected: Return to correction/review branch.
+
+STEP 13 - TOKEN-SAVING RULES Supervisor: - delegate only necessary
+specialists - call each specialist once - keep instructions short
+
+Specialists: - maximum 3 targeted searches - maximum 5 findings -
+maximum 3 sources
+
+Report Agent: - do not perform new research - use only specialist
+outputs
+
+Reviewer: - do not rewrite the entire report - return only PASS or
+corrections
+
+STEP 14 - TEACHING DEMONSTRATION Run these three requests:
+
+A: “Research the market for a coffee shop in Surat.” Expected: Market
+Agent only.
+
+B: “Find competitors for a coffee shop in Surat.” Expected: Competitor
+Agent only.
+
+C: “Research market, competitors, and customers for a coffee shop in
+Surat.” Expected: All three specialists.
+
+This clearly demonstrates why the Supervisor exists.
+
+COMMON PROBLEMS Specialist is not called: Check that the workflow is
+Published and the Call n8n Workflow Tool points to the correct workflow.
+
+Specialist receives null: Check the Workflow Input Schema and map
+research_request.
+
+Supervisor answers from its own knowledge: Strengthen system
+instructions: use specialist tools for detailed research.
+
+Too many tokens: Reduce searches and output limits.
+
+Final report invents facts: Tell Report Agent to use only specialist
+outputs.
+
+FINAL TEACHING FLOW User -> Supervisor -> Specialized Agents -> Research
+-> Report -> Review -> Human Approval -> Delivery
+
+KEY LESSON One agent can have many tools. But when responsibilities
+become different, specialized agents can make the system easier to
+organize, control, and extend.
