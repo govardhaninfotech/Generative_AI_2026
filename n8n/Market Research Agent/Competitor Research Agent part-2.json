@@ -1,0 +1,138 @@
+{
+  "name": "Competitor Research Agent part-2",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "research_request"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8b2e1d4e-3a66-4a97-abc1-a42d189ca22c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.research_request }}",
+        "options": {
+          "systemMessage": "You are the Competitor Research Specialist.\n\nYour job is to research competitors related to the business idea provided by the Supervisor Agent.\n\nUse Brave Search to find current and relevant information.\n\nFocus only on:\n- Competitor names\n- Locations\n- Products and services\n- Pricing\n- Online presence\n- Customer reviews or ratings when available\n- Competitor strengths and differentiators\n\nDo not research general market trends or detailed customer profiles.\n\nReturn a concise competitor research summary with useful facts and sources.\n\nTOKEN LIMIT:\nUse a maximum of 3 targeted searches.\nReturn maximum 5 competitors/findings, maximum 5 important prices or numbers, and maximum 3 sources.\nDo not repeat the user's request.\nDo not provide unnecessary explanations."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "cbff2164-bc05-41bd-a9cb-6dba69f33427",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "1ab8c1bd-342c-44f0-85a4-5483bb15f5c2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "count": 5,
+        "additionalParameters": {}
+      },
+      "type": "@brave/n8n-nodes-brave-search.braveSearchTool",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        208
+      ],
+      "id": "98e82bcb-26cc-4ac9-9790-d137ff3b6d46",
+      "name": "Brave Search",
+      "credentials": {
+        "braveSearchApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brave Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1ae576c0-fbdc-4b9c-9924-1a17ae6babba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cba929c45321d7fbe1dc3738ff433336384cb4d773f88c59a053ec4d47c33f5b"
+  },
+  "nodeGroups": [],
+  "id": "S25qucYYvfKixqOe",
+  "tags": []
+}

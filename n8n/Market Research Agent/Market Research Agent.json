@@ -1,0 +1,227 @@
+{
+  "name": "Market Research Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1aaa0ba9-aee6-4b29-8c1e-c1cb7afb50a4",
+      "name": "When chat message received",
+      "webhookId": "53f5de08-eea1-495b-a1ff-4672edad85d9"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the Supervisor Agent for a business research team.\n\nYour job is to understand the user's request, delegate only the necessary work to specialist agents, and return a concise final answer.\n\nSPECIALIST AGENTS:\n\n1. Market Research Agent\nUse ONLY for:\n- Market demand and trends\n- Industry information\n- Relevant statistics\n- Market opportunities\n\n2. Competitor Research Agent\nUse ONLY for:\n- Competitor names\n- Locations\n- Products/services\n- Pricing\n- Online presence\n- Reviews and differentiators\n\nDELEGATION RULES:\n\n- If the user asks for market research, call Market Research Agent.\n- If the user asks for competitor research, call Competitor Research Agent.\n- If the user asks for both, call both agents.\n- Do not call an agent if its information is not needed.\n- Do not perform detailed web research yourself when a specialist can do it.\n- Never call the same specialist more than once for the same request.\n- Do not ask unnecessary clarification questions. If the request contains enough information, start the research immediately.\n- If important information is genuinely missing, make a reasonable assumption and clearly state it instead of asking multiple questions.\n\nTOKEN-SAVING RULES:\n\n- Give each specialist only the user's original request and the specific task it needs to perform.\n- Do not repeat large instructions or previous research in tool calls.\n- Ask specialists for concise results only.\n- Prefer 2–3 targeted web searches instead of many searches.\n- Do not search for information that is outside the specialist's assigned responsibility.\n- Do not repeat information already obtained from another specialist.\n- Do not generate long explanations.\n\nSPECIALIST OUTPUT FORMAT:\n\nEach specialist should return:\n1. Key findings: maximum 5 bullet points.\n2. Important numbers/prices/statistics: maximum 5 items.\n3. Sources: maximum 3 important sources.\n\nFINAL RESPONSE:\n\nCombine the specialist results into a concise answer.\n\nUse this structure:\n\n## Executive Summary\n3–5 bullets.\n\n## Market Findings\nOnly if market research was requested.\n\n## Competitor Findings\nOnly if competitor research was requested.\n\n## Key Numbers\nOnly the most useful numbers.\n\n## Sources\nMaximum 5 important sources.\n\nDo not mention internal agent workflows, tools, token usage, or delegation unless the user asks."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3aa4d278-fd7f-41a7-bcd8-da7aed0c874a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "4912f24b-2006-4499-8b97-a3df9e50b7da",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        208
+      ],
+      "id": "eeb79998-6c32-4abe-a5ee-c29baaf1abe8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to research the market for the user's business idea.\nIt provides market trends, demand, industry information, statistics, and opportunities.\nUse it whenever the user asks for market research.",
+        "workflowId": {
+          "__rl": true,
+          "value": "WEDQ7smrXB3BclpB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/WEDQ7smrXB3BclpB",
+          "cachedResultName": "Market Research Agent part-2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "research_request": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('research_request', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "research_request"
+          ],
+          "schema": [
+            {
+              "id": "research_request",
+              "displayName": "research_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        160
+      ],
+      "id": "b0886126-d09f-48ee-be0a-82f7cdf5b62e",
+      "name": "Call 'Market Research Agent part-2'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "S25qucYYvfKixqOe",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/S25qucYYvfKixqOe",
+          "cachedResultName": "Competitor Research Agent part-2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "research_request": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('research_request', `Use this tool to research competitors for the user's business idea.\nFind competitor names, locations, products/services, pricing, online presence, reviews, and differentiators.\nUse it whenever the user asks for competitor research.`, 'string') }}"
+          },
+          "matchingColumns": [
+            "research_request"
+          ],
+          "schema": [
+            {
+              "id": "research_request",
+              "displayName": "research_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        208
+      ],
+      "id": "dfba43c9-a8ac-498e-9108-74e7bbcc0c22",
+      "name": "Call 'Competitor Research Agent part-2'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Market Research Agent part-2'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Competitor Research Agent part-2'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c78da17e-91e4-4981-8091-57c1f9ce4e07",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cba929c45321d7fbe1dc3738ff433336384cb4d773f88c59a053ec4d47c33f5b"
+  },
+  "nodeGroups": [],
+  "id": "y1r9YL86DXqIn4Pv",
+  "tags": []
+}

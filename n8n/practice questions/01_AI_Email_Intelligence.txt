@@ -1,0 +1,171 @@
+n8n PRACTICAL WORKFLOW 1 AI EMAIL INTELLIGENCE AND AUTOMATIC ROUTING For
+non-technical learners
+
+PURPOSE Build an automation that reads incoming emails, uses AI to
+understand the message, classifies it, and routes it to the correct
+action.
+
+REAL-WORLD EXAMPLE A company receives: - Sales enquiries - Support
+questions - Course enquiries - General messages
+
+Instead of a person reading every email manually: Gmail -> AI ->
+Classification -> Route -> Action -> Log
+
+SYLLABUS COVERAGE Module 1: From Prompting to Agents Module 2: Workflow
+Design for Agentic Systems Module 4: Automation and Cross-Tool
+Integration Module 7: Governance, reliability, and monitoring
+
+LEARNING OUTCOME Students should understand: 1. A trigger starts the
+workflow. 2. AI understands unstructured text. 3. Structured output
+makes AI usable by automation. 4. Conditions route the result. 5. Other
+tools perform the final action. 6. The workflow can be monitored and
+logged.
+
+BEFORE STARTING Create or prepare: 1. Gmail account connected to n8n. 2.
+Google Sheets account connected to n8n. 3. OpenAI credential. 4.
+Optional Slack credential. 5. Create Google Sheet: File name: AI Email
+Log Sheet name: Sheet1 Columns: Date | Sender | Subject | Category |
+Priority | Summary | Action | Status
+
+WORKFLOW MAP Gmail Trigger -> AI Agent -> Structured Output /
+Information Extractor -> Switch -> Sales -> Support -> General -> Action
+-> Google Sheets Log
+
+STEP 1 - CREATE WORKFLOW 1. Open n8n. 2. Click New Workflow. 3. Name it:
+AI Email Intelligence
+
+STEP 2 - ADD GMAIL TRIGGER Node: Gmail Trigger (or the Gmail trigger
+available in your n8n version)
+
+Purpose: Starts the workflow when a new email arrives.
+
+Configuration: - Credential: your Gmail account - Event: new
+message/email received - If filters are available, initially leave them
+broad so testing is easy.
+
+Connection: Gmail Trigger -> AI Agent
+
+TEST: Send a test email to the connected Gmail account.
+
+STEP 3 - ADD AI AGENT Node: AI Agent
+
+Purpose: Understand the email and classify it.
+
+Connect: Gmail Trigger -> AI Agent
+
+Add: OpenAI Chat Model -> AI Agent Chat Model
+
+System Message: You are an email classification assistant. Read the
+incoming email and classify it into exactly one category: Sales,
+Support, or General.
+
+Also determine: - priority: High, Medium, or Low - short_summary:
+maximum 2 sentences - action: one short recommended action
+
+Return only the required structured information. Do not invent
+information.
+
+User message: Use the email subject and body from the Gmail trigger. In
+the expression field, map the actual subject and body fields shown by
+your Gmail node.
+
+IMPORTANT: Do not guess field names. Click the input field and select
+the Subject and Body from the previous Gmail node.
+
+STEP 4 - MAKE THE OUTPUT STRUCTURED Preferred method: Use an Information
+Extractor / Structured Output Parser available in your n8n version.
+
+Expected structure: { “category”: “Sales”, “priority”: “High”,
+“short_summary”: “Customer wants corporate AI training.”, “action”:
+“Send the enquiry to sales.” }
+
+Rules: category = Sales or Support or General priority = High or Medium
+or Low
+
+Why: A human can understand free text, but a Switch node needs
+predictable values.
+
+STEP 5 - ADD SWITCH Node: Switch
+
+Purpose: Send the email to a different branch according to category.
+
+Connect: Structured AI output -> Switch
+
+Create rules: Rule 1: category equals Sales
+
+Rule 2: category equals Support
+
+Rule 3: category equals General
+
+If your Switch UI asks for a value, use the category field from the AI
+output.
+
+STEP 6 - SALES BRANCH Add Gmail Send Email or Slack message.
+
+Example action: Send a message to the sales team.
+
+Message: New sales enquiry received. Sender: [sender] Subject: [subject]
+Summary: [summary] Priority: [priority]
+
+If you do not have a team email, temporarily send it to your own test
+email.
+
+STEP 7 - SUPPORT BRANCH Add Gmail Send Email or Slack.
+
+Message: New support enquiry received. Sender: [sender] Subject:
+[subject] Summary: [summary] Priority: [priority]
+
+STEP 8 - GENERAL BRANCH Add Gmail Send Email or simply continue to
+logging.
+
+Message: General email received. Summary: [summary]
+
+STEP 9 - LOG EVERYTHING Add Google Sheets node after each branch, or
+merge the branches first and then log.
+
+Google Sheets: - Operation: Append Row - Document: AI Email Log - Sheet:
+Sheet1
+
+Map: Date -> current time Sender -> Gmail sender Subject -> Gmail
+subject Category -> AI category Priority -> AI priority Summary -> AI
+summary Action -> AI action Status -> Processed
+
+IMPORTANT: Use Append Row, not Get Row(s). Get Row(s) reads existing
+data. Append Row adds a new record.
+
+STEP 10 - TEST CASES Test 1: Subject: Corporate AI Training Body: We
+need AI training for 30 employees. Expected: Sales
+
+Test 2: Subject: Login problem Body: I cannot access my account.
+Expected: Support
+
+Test 3: Subject: Workshop timing Body: What time does the workshop
+start? Expected: General
+
+STEP 11 - MONITORING Open the n8n execution history. Check: - Trigger
+ran - AI ran - Correct category was produced - Switch selected the
+correct branch - Email/Slack action succeeded - Google Sheet row was
+added
+
+COMMON PROBLEMS Problem: AI output changes wording. Fix: Use structured
+output and strict allowed values.
+
+Problem: Switch does not route. Fix: Check the exact JSON field name and
+capitalization.
+
+Problem: Gmail body is empty. Fix: Inspect the Gmail Trigger output and
+select the correct body field.
+
+Problem: Sheet row is not added. Fix: Check credential, spreadsheet,
+sheet name, and use Append Row.
+
+TEACHING POINT Automation without AI: “If subject contains quotation ->
+Sales.”
+
+AI automation: “Understand the meaning of the email -> classify ->
+route.”
+
+This teaches why AI is useful inside automation.
+
+FINAL FLOW Gmail Trigger -> AI Agent -> Structured Output -> Switch ->
+Sales / Support / General -> Gmail or Slack -> Google Sheets Log
