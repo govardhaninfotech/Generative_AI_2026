@@ -1,0 +1,265 @@
+{
+  "name": "AI Email Intelligence",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "17c03590-07c6-4c5e-b7b7-2b3f2c5988f4",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NFjdp8cCaAwVQKEI",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.snippet }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an AI Email Intelligence Agent for a business.\n\nAnalyze every incoming Gmail email carefully.\n\nYour tasks:\n\n1. Classify the email into exactly one category:\n   - Sales\n   - Support\n   - General\n\n2. Create a professional and concise summary that clearly explains:\n   - What the sender wants\n   - The main request or issue\n   - Any important details such as product, service, price, date, or requirement\n   - The recommended next action\n\n3. Do not invent information that is not present in the email.\n\n4. Keep the summary easy for a business person to understand.\n\n5. If the email is asking for a quotation, pricing, demo, meeting, purchase, or service information, classify it as Sales.\n\n6. If the email reports a problem, asks for help, or requests technical/customer support, classify it as Support.\n\n7. Everything else should be classified as General.\n\nReturn only:\n- category\n- summary\n\nThe category must be exactly:\nSales, Support, or General.\n\nThe summary should be professional, informative, and concise."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "daedb67c-b5d3-4dae-9fb6-b01e56707b2d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "8f024d26-50cb-4c99-b5bc-26083c93103f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"category\": \"Sales\",\n  \"summary\": \"Customer is asking about the pricing of the product.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        192
+      ],
+      "id": "d55b1895-1ede-46d0-a1f0-1282f750fefa",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "Sales",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "04d4e363-169e-44b6-b433-a98b9fd8dac4"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a3d59492-af3e-42f8-91af-02e55afe8c10",
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "Support",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "28b001fe-06fc-4c79-9fd2-4a277e464bbe",
+                    "leftValue": "={{ $json.output.category }}",
+                    "rightValue": "General",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        0
+      ],
+      "id": "f5057e1e-51f2-4668-a6b4-d4eeead2cf59",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Gmail Trigger').item.json.To }}",
+        "subject": "New Sales Email Received",
+        "message": "=<h3>New Sales Email</h3>  <p><strong>Category:</strong> {{ $json.output.category }}</p>  <p><strong>Summary:</strong> {{ $json.output.summary }}</p>  <p>Please review this email and follow up with the customer.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        -80
+      ],
+      "id": "e748e95d-f755-4f87-9379-0c206f7ed59c",
+      "name": "Send a message",
+      "webhookId": "af13f08d-6679-4675-aaf6-8471cc98f600",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "NFjdp8cCaAwVQKEI",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b89c7bc9-3917-43d4-ac4f-8365dd9e7ee2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cba929c45321d7fbe1dc3738ff433336384cb4d773f88c59a053ec4d47c33f5b"
+  },
+  "nodeGroups": [],
+  "id": "YynhVzHjw52XF6Gw",
+  "tags": []
+}
