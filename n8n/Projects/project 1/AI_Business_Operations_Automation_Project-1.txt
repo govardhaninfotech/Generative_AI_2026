@@ -1,0 +1,546 @@
+AI BUSINESS OPERATIONS AUTOMATION PLATFORM Complete n8n Capstone Project
+— Step-by-Step Build Guide
+
+PROJECT PURPOSE Build one realistic business automation system in n8n
+that handles: 1. Sales/support/general emails 2. Invoice PDF processing
+3. Meeting notes and action items 4. Lead qualification 5. Multi-agent
+business research 6. Human approval and centralized logging
+
+IMPORTANT - Build and test ONE workflow at a time. - Node names can vary
+slightly between n8n versions. - In your current n8n version, use “When
+clicking ‘Execute workflow’” for manual testing. - Your current n8n
+version uses “Edit Fields (Set)” instead of the older “Set” name. -
+Check the node screen before assuming a field exists. - Test each node
+before moving to the next node.
+
+============================================================ PROJECT
+PREPARATION ============================================================
+
+Create a Google Spreadsheet:
+
+Name: AI Business Operations Database
+
+Create these sheets and row-1 headers:
+
+Sales_Emails Email ID | Date | Sender | Subject | Category | Summary |
+Status
+
+Invoices Invoice Number | Invoice Date | Vendor Name | Customer Name |
+Subtotal | Tax | Total | Currency | Payment Terms | Status
+
+Meetings Meeting Date | Meeting Title | Action Item | Owner | Deadline |
+Status
+
+Leads Lead ID | Date | Name | Company | Email | Requirement | Budget |
+Qualification | Priority | Status
+
+Research Research ID | Date | Company/Topic | Market Findings |
+Competitor Findings | Customer Findings | Final Report | Status
+
+Approvals Request ID | Type | Reference | Amount | Requested By |
+Decision | Approved By | Date
+
+Logs Timestamp | Workflow | Node | Status | Reference | Message
+
+Connect: - Gmail - Google Sheets - OpenAI Optional later: - Google
+Calendar - Slack - Microsoft Teams
+
+============================================================ WORKFLOW 1
+— AI EMAIL INTELLIGENCE
+============================================================
+
+Workflow name: AI Email Intelligence
+
+Purpose: Read incoming Gmail messages, classify them, summarize them,
+and route them.
+
+NODE 1 — Gmail Trigger Parameters: Credential: Gmail account Event:
+Message Received Poll Times: Every Minute Simplify: ON Max Emails per
+Poll: 10 Filters: none initially
+
+NODE 2 — AI Agent Connect: Gmail Trigger -> AI Agent
+
+Source for Prompt (User Message): Define below
+
+Prompt: Analyze the incoming business email.
+
+Email: {{ $json.snippet }}
+
+Classify the email into exactly one category: Sales Support General
+
+Create a concise professional summary.
+
+Rules: - Pricing, quotation, demo, purchase, training, service inquiry =
+Sales - Problem, complaint, technical help, customer support = Support -
+Everything else = General - Never invent information.
+
+Return only: category summary
+
+Require Specific Output Format: ON
+
+NODE 3 — OpenAI Chat Model Connect to AI Agent -> Chat Model Credential:
+existing OpenAI credential Model: use the model that already works in
+your n8n account
+
+NODE 4 — Structured Output Parser Connect to AI Agent -> Output Parser
+
+Schema Type: Generate From JSON Example
+
+JSON Example: { “category”: “Sales”, “summary”: “Customer is asking
+about corporate AI training pricing.” }
+
+NODE 5 — Switch Connect: AI Agent -> Switch
+
+Value: {{ $json.output.category }}
+
+Rules: Output 0: is equal to Sales Output 1: is equal to Support Output
+2: is equal to General
+
+NODE 6 — Gmail Send Message For Sales branch:
+
+Resource: Message Operation: Send To: your notification email Subject:
+New Sales Email Received Email Type: HTML
+
+Message:
+New Sales Email
+Category: {{ $json.output.category }}
+Summary: {{ $json.output.summary }}
+Please review and follow up with the customer.
+Create equivalent Support and General branches if needed.
+
+NODE 7 — Google Sheets Resource: Sheet Within Document Operation: Append
+Row Document: AI Business Operations Database Sheet: Sales_Emails
+
+Map: Email ID -> {{ $json.id }} Date -> {{ $now }} Sender -> {{
+$json.from }} Subject -> {{ $json.subject }} Category -> {{
+$json.output.category }} Summary -> {{ $json.output.summary }} Status ->
+New
+
+============================================================ WORKFLOW 2
+— AI INVOICE DOCUMENT PIPELINE
+============================================================
+
+Workflow name: AI Invoice Document Pipeline
+
+Purpose: Download an invoice PDF from Gmail, extract text, read it with
+AI, validate it, and store it.
+
+NODE 1 — Gmail Trigger Credential: Gmail account Event: Message Received
+Poll Times: Every Minute Simplify: ON Max Emails per Poll: 10
+
+NODE 2 — Gmail Get a Message Resource: Message Operation: Get Message
+ID: {{ $json.id }}
+
+Simplify: OFF
+
+Options: Download Attachments: ON
+
+In the current example the PDF binary field is: attachment_0
+
+NODE 3 — Extract from File Operation: Extract From PDF
+
+Input Binary Field: attachment_0
+
+Expected extracted text field: $json.text
+
+NODE 4 — AI Agent Source for Prompt: Define below
+
+Prompt: Extract the invoice information from the PDF text below.
+
+PDF text: {{ $json.text }}
+
+Extract: - Invoice number - Invoice date - Vendor name - Customer name -
+Subtotal - Tax - Total - Currency - Payment terms
+
+Do not invent missing information.
+
+Require Specific Output Format: ON
+
+NODE 5 — OpenAI Chat Model Connect to AI Agent -> Chat Model. Use
+existing OpenAI credential and working model.
+
+NODE 6 — Structured Output Parser Schema Type: Generate From JSON
+Example
+
+JSON Example: { “invoiceNumber”: “INV-2026-1025”, “invoiceDate”:
+“2026-09-22”, “vendorName”: “ABC Technologies Pvt. Ltd.”,
+“customerName”: “Govardhan Institute”, “subtotal”: 30000, “tax”: 5400,
+“total”: 35400, “currency”: “INR”, “paymentTerms”: “Due within 15 days”
+}
+
+NODE 7 — IF VALIDATION For the first test:
+
+Value 1: {{ $json.output.total }}
+
+Operator: is equal to
+
+Value 2: 35400
+
+Important: This hard-coded value is only for the test. In production,
+validate: subtotal + tax = total.
+
+NODE 8 — Google Sheets Resource: Sheet Within Document Operation: Append
+Row Document: AI Business Operations Database Sheet: Invoices
+
+Map: Invoice Number -> {{ $json.output.invoiceNumber }} Invoice Date ->
+{{ $json.output.invoiceDate }} Vendor Name -> {{ $json.output.vendorName
+}} Customer Name -> {{ $json.output.customerName }} Subtotal -> {{
+$json.output.subtotal }} Tax -> {{ $json.output.tax }} Total -> {{
+$json.output.total }} Currency -> {{ $json.output.currency }} Payment
+Terms -> {{ $json.output.paymentTerms }} Status -> Validated
+
+FALSE branch: Send to review/approval instead of marking Validated.
+
+============================================================ WORKFLOW 3
+— AI MEETING TO ACTION
+============================================================
+
+Workflow name: AI Meeting to Action
+
+NODE 1 — When clicking ‘Execute workflow’ Use this as the manual testing
+trigger in your n8n version.
+
+NODE 2 — Edit Fields (Set) Connect: Manual Trigger -> Edit Fields
+
+Mode: Manual Mapping
+
+Add field: Name: meeting_notes Type: String
+
+Test value: Meeting with ABC Technologies.
+
+Rahul will prepare the AI training proposal by Friday. Priya will
+schedule the client demo for Monday at 11 AM. Dhruv will send the
+pricing details to Rahul today. The team will review the proposal in the
+next meeting.
+
+NODE 3 — AI Agent Connect: Edit Fields -> AI Agent
+
+Source for Prompt: Define below
+
+Prompt: Analyze the meeting notes below.
+
+Meeting Notes: {{ $json.meeting_notes }}
+
+Identify: 1. Every action item 2. Responsible person 3. Deadline if
+mentioned 4. Important follow-up
+
+Do not invent missing information.
+
+NODE 4 — OpenAI Chat Model Connect to Chat Model. Use existing OpenAI
+credential and working model.
+
+NODE 5 — Structured Output Parser Schema Type: Generate From JSON
+Example
+
+JSON Example: { “meetingSummary”: “Meeting with ABC Technologies about
+AI training.”, “actionItems”: [ { “task”: “Prepare AI training
+proposal”, “owner”: “Rahul”, “deadline”: “Friday” }, { “task”: “Schedule
+client demo”, “owner”: “Priya”, “deadline”: “Monday 11 AM” }, { “task”:
+“Send pricing details”, “owner”: “Dhruv”, “deadline”: “Today” } ] }
+
+NODE 6 — Split Out Purpose: Turn actionItems into separate items.
+
+Field to Split Out: actionItems
+
+NODE 7 — Google Sheets Operation: Append Row
+
+Document: AI Business Operations Database
+
+Sheet: Meetings
+
+Map: Meeting Date -> {{ $now }} Meeting Title -> AI Training Meeting
+Action Item -> {{ $json.task }} Owner -> {{ $json.owner }} Deadline ->
+{{ $json.deadline }} Status -> Pending
+
+OPTIONAL: Google Calendar can be added later, but only create events
+when the date/time is reliably known.
+
+============================================================ WORKFLOW 4
+— AI LEAD QUALIFICATION
+============================================================
+
+Workflow name: AI Lead Qualification
+
+NODE 1 — Webhook Method: POST Path: ai-lead Response: When Last Node
+Finishes
+
+Test JSON: { “name”: “Rahul Patel”, “company”: “ABC Technologies”,
+“email”: “rahul@abctech.com”, “requirement”: “Corporate AI training for
+250 employees”, “budget”: “200000” }
+
+NODE 2 — AI Agent Prompt: Analyze this incoming business lead.
+
+Lead: {{ JSON.stringify($json) }}
+
+Extract: name company email requirement budget
+
+Then determine: qualification priority
+
+Rules: - Strong requirement + identifiable company + budget =
+Qualified - Missing important information = Needs Information - Clearly
+irrelevant = Unqualified - Do not invent information.
+
+NODE 3 — OpenAI Chat Model Connect to AI Agent -> Chat Model.
+
+NODE 4 — Structured Output Parser JSON Example: { “name”: “Rahul Patel”,
+“company”: “ABC Technologies”, “email”: “rahul@abctech.com”,
+“requirement”: “Corporate AI training for 250 employees”, “budget”:
+200000, “qualification”: “Qualified”, “priority”: “High” }
+
+NODE 5 — Google Sheets Operation: Append Row Sheet: Leads
+
+Map: Lead ID -> {{ $execution.id }} Date -> {{ $now }} Name -> {{
+$json.output.name }} Company -> {{ $json.output.company }} Email -> {{
+$json.output.email }} Requirement -> {{ $json.output.requirement }}
+Budget -> {{ $json.output.budget }} Qualification -> {{
+$json.output.qualification }} Priority -> {{ $json.output.priority }}
+Status -> Pending Approval
+
+NODE 6 — Human Approval For the first version, send an approval email.
+
+Gmail: Resource: Message Operation: Send
+
+Subject: Lead Approval Required — {{ $json.output.company }}
+
+Message: A new lead requires review.
+
+Company: {{ $json.output.company }}
+
+Requirement: {{ $json.output.requirement }}
+
+Budget: {{ $json.output.budget }}
+
+Qualification: {{ $json.output.qualification }}
+
+Please review before sales follow-up.
+
+============================================================ WORKFLOW 5
+— AI BUSINESS RESEARCH / MULTI-AGENT
+============================================================
+
+Main workflow name: AI Business Research
+
+NODE 1 — When clicking ‘Execute workflow’
+
+NODE 2 — Edit Fields (Set)
+
+Field: research_request
+
+Value: Research the corporate AI training market in Gujarat. Analyze
+market demand, major competitors, customer requirements, pricing
+patterns, and opportunities for Govardhan Institute.
+
+NODE 3 — Supervisor AI Agent
+
+Prompt: You are the Supervisor Research Agent.
+
+Research request: {{ $json.research_request }}
+
+Delegate research to specialist agents.
+
+Specialists: - Market Agent: market trends and demand - Competitor
+Agent: competitors and offerings - Customer Agent: customer needs and
+buying factors
+
+Rules: - Maximum 3 searches per specialist. - Keep findings concise. -
+Do not invent facts. - Clearly identify uncertainty. - Combine findings
+into one report.
+
+Final report structure: 1. Executive Summary 2. Market Findings 3.
+Competitor Findings 4. Customer Findings 5. Opportunities 6. Risks /
+Unknowns 7. Further Research Questions
+
+NODE 4 — OpenAI Chat Model Connect to Supervisor AI Agent.
+
+NODE 5 — Call n8n Workflow Tool Create three specialist workflows: 1.
+Market Research Specialist 2. Competitor Research Specialist 3. Customer
+Research Specialist
+
+Each specialist input: research_request — String
+
+MARKET RESEARCH SPECIALIST
+
+Trigger: When Executed by Another Workflow
+
+AI Agent prompt: Research the market aspects of this request.
+
+Request: {{ $json.research_request }}
+
+Find: - Market trends - Demand - Customer segments - Business
+opportunities
+
+Keep the answer concise and factual.
+
+COMPETITOR RESEARCH SPECIALIST
+
+Trigger: When Executed by Another Workflow
+
+AI Agent prompt: Research competitors relevant to this request.
+
+Find: - Competitor names - Services - Target customers - Publicly
+available pricing when available - Differentiation
+
+Do not invent information.
+
+CUSTOMER RESEARCH SPECIALIST
+
+Trigger: When Executed by Another Workflow
+
+AI Agent prompt: Research customer needs relevant to this request.
+
+Find: - Customer pain points - Buying requirements - Common objections -
+Decision factors
+
+Do not invent information.
+
+NODE 6 — Reviewer AI Agent
+
+Prompt: Review this research report.
+
+Check: - Unsupported claims - Missing evidence - Contradictions -
+Excessive assumptions - Important missing information
+
+Return: approvedForHumanReview issues finalReport
+
+Do not rewrite facts without evidence.
+
+NODE 7 — Human Approval Send report for human review.
+
+NODE 8 — Google Sheets Sheet: Research
+
+Save: Research ID Date Topic Market Findings Competitor Findings
+Customer Findings Final Report Status
+
+============================================================ WORKFLOW 6
+— GOVERNANCE, APPROVAL AND LOGGING
+============================================================
+
+Workflow name: AI Governance and Monitoring
+
+Purpose: Create a safety and audit layer around important AI-generated
+actions.
+
+Architecture:
+
+AI Output | Validation | +– Invalid –> Human Review / Error | Risk Check
+| +– High Risk –> Human Approval | Approved Action | External System |
+Logging
+
+NODE 1: Use output from the relevant business workflow.
+
+NODE 2 — IF Validation
+
+Example: {{ $json.output.total }}
+
+Operator: is greater than
+
+Value: 50000
+
+TRUE: High-value transaction -> Human Approval
+
+FALSE: Normal transaction -> Continue
+
+NODE 3 — Human Approval High-value transactions require approval.
+
+NODE 4 — Google Sheets Sheet: Approvals
+
+Fields: Request ID Type Reference Amount Requested By Decision Approved
+By Date
+
+NODE 5 — Logging Sheet: Logs
+
+Timestamp: {{ $now }}
+
+Workflow: {{ $workflow.name }}
+
+Status: Approved / Rejected / Error
+
+Reference: {{ $execution.id }}
+
+Message: Human approval decision recorded.
+
+============================================================ FINAL
+MASTER ARCHITECTURE
+============================================================
+
+1.  AI Email Intelligence
+2.  AI Invoice Document Pipeline
+3.  AI Meeting to Action
+4.  AI Lead Qualification
+5.  AI Business Research / Multi-Agent
+6.  AI Governance and Monitoring
+
+Overall flow:
+
+EMAIL -> Sales -> Lead Qualification -> Approval -> Support -> Support
+Team -> Invoice -> PDF Extraction -> AI -> Validation -> Approval if
+needed -> Meeting -> Action Items -> Sheets/Calendar -> Research ->
+Supervisor -> Specialist Agents -> Reviewer -> Approval
+
+============================================================ TEST DATA
+============================================================
+
+TEST EMAIL Subject: Corporate AI Training Inquiry
+
+Body: Hello,
+
+We are interested in conducting an AI training program for our team of
+25 employees.
+
+Please share available training packages, pricing, duration, topics
+covered, and customized corporate training options.
+
+Regards, Rahul Patel HR Manager ABC Technologies
+
+TEST INVOICE Invoice Number: INV-2026-1025 Vendor: ABC Technologies Pvt.
+Ltd. Customer: Govardhan Institute Subtotal: 30000 Tax: 5400 Total:
+35400 Currency: INR Payment Terms: Due within 15 days
+
+TEST MEETING Meeting with ABC Technologies.
+
+Rahul will prepare the AI training proposal by Friday. Priya will
+schedule the client demo for Monday at 11 AM. Dhruv will send the
+pricing details to Rahul today.
+
+TEST LEAD Name: Rahul Patel Company: ABC Technologies Email:
+rahul@abctech.com Requirement: Corporate AI training for 250 employees
+Budget: 200000
+
+TEST RESEARCH Research the corporate AI training market in Gujarat.
+Analyze demand, competitors, customer requirements, pricing patterns,
+and opportunities.
+
+============================================================ PRODUCTION
+IMPROVEMENTS
+============================================================
+
+After the basic project works:
+
+1.  Replace hard-coded validation values with calculations.
+2.  Add proper human approval forms.
+3.  Add error branches.
+4.  Add duplicate email/invoice detection.
+5.  Add Google Calendar integration.
+6.  Add Slack/Teams notifications if required.
+7.  Add retry/error handling.
+8.  Add execution logging.
+9.  Use least-privilege credentials.
+10. Add a central dashboard.
+11. Add RAG/company knowledge retrieval.
+12. Monitor failed executions.
+13. Test with many real-world inputs before activation.
+14. Keep AI prompts concise to reduce token usage.
+15. Never allow AI to invent financial or customer information.
+
+============================================================ LEARNING
+CHECKLIST ============================================================
+
+[ ] Trigger nodes [ ] Gmail integration [ ] Google Sheets integration [
+] Edit Fields (Set) [ ] AI Agent [ ] OpenAI Chat Model [ ] Structured
+Output Parser [ ] Switch [ ] IF validation [ ] PDF extraction [ ] Binary
+attachment handling [ ] Expressions [ ] Split Out / array processing [ ]
+Human approval [ ] Multi-agent workflows [ ] Supervisor agent [ ]
+Workflow-to-workflow calls [ ] Research automation [ ] Error handling [
+] Logging [ ] Governance [ ] Production reliability
+
+END OF PROJECT GUIDE
