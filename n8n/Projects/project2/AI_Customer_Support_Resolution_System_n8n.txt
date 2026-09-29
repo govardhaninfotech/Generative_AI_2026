@@ -1,0 +1,728 @@
+AI CUSTOMER SUPPORT RESOLUTION SYSTEM
+n8n Project — Complete Step-by-Step Build Guide
+
+PROJECT NAME
+AI Customer Support Resolution System
+
+PROJECT GOAL
+Build an AI support-ticket automation system that:
+1. Receives a customer support email.
+2. Extracts customer and issue information.
+3. Classifies the ticket.
+4. Assigns priority.
+5. Searches a company knowledge base.
+6. Generates a suggested resolution.
+7. Decides whether human approval is required.
+8. Sends a reply when safe.
+9. Stores the ticket in Google Sheets.
+10. Tracks SLA and escalates unresolved tickets.
+
+IMPORTANT
+- Build and test one node at a time.
+- Node names can vary slightly by n8n version.
+- In your current n8n version: Manual test trigger = “When clicking ‘Execute workflow’”.
+- Current Set node name = “Edit Fields (Set)”.
+- Check the node UI before assuming a parameter exists.
+
+============================================================
+PART 1 — DATABASE
+============================================================
+
+Create Google Spreadsheet:
+AI Customer Support Database
+
+Sheet: Tickets
+Headers:
+Ticket ID | Date | Customer Name | Email | Subject | Issue | Category | Priority | Status | AI Resolution | Human Approval | SLA Deadline
+
+Sheet: Knowledge_Base
+Headers:
+Article ID | Title | Category | Content | Updated Date
+
+Sample rows:
+KB001 | Certificate Download | Technical Support | If a certificate cannot be downloaded, verify that the certificate has been generated and that the student certificate record is active. If the certificate is not ready, inform the student that the institute will notify them when it is ready. | 2026-09-29
+KB002 | Training Schedule | General | Training schedules depend on the selected course and batch. Confirm the course and batch before giving a schedule. | 2026-09-29
+KB003 | Payment Support | Billing | For payment questions, verify the payment reference and transaction status before confirming a payment. | 2026-09-29
+
+Sheet: SLA_Log
+Headers:
+Ticket ID | Priority | Created At | SLA Deadline | Current Status | Escalation Status
+
+Sheet: Support_Log
+Headers:
+Timestamp | Ticket ID | Workflow | Action | Status | Message
+
+============================================================
+PART 2 — MAIN WORKFLOW
+============================================================
+
+Workflow name:
+AI Customer Support Resolution System
+
+Architecture:
+Gmail Trigger -> AI Ticket Analyzer -> Structured Output -> Validation -> Priority -> Knowledge -> AI Resolution -> Safety Check -> Reply/Approval -> Sheets -> SLA Log
+
+============================================================
+NODE 1 — Gmail Trigger
+============================================================
+
+Node name:
+Gmail Trigger
+
+Parameters:
+Credential: Your connected Gmail account
+Event: Message Received
+Poll Times: Every Minute
+Simplify: ON
+Max Emails per Poll: 10
+Filters: none initially
+
+TEST EMAIL
+Subject:
+Certificate download problem
+
+Body:
+Hello,
+
+I completed my course but I cannot download my certificate.
+Please help me.
+
+Regards,
+Rahul Patel
+
+============================================================
+NODE 2 — AI Agent
+============================================================
+
+Node name:
+AI Ticket Analyzer
+
+Connect:
+Gmail Trigger -> AI Ticket Analyzer
+
+Source for Prompt (User Message):
+Define below
+
+Prompt:
+Analyze this customer support email.
+
+Email content:
+{{ $json.snippet }}
+
+Extract:
+1. Customer name
+2. Customer email
+3. Subject
+4. Main issue
+5. Category
+6. Priority
+7. Whether human approval may be required
+
+Allowed categories:
+Technical Support
+Billing
+Account
+Training
+General
+
+Allowed priorities:
+Low
+Medium
+High
+Critical
+
+Rules:
+- Do not invent information.
+- Technical problems are Technical Support.
+- Payment/invoice issues are Billing.
+- Login/profile/access issues are Account.
+- Course/batch/schedule questions are Training.
+- Everything else is General.
+- Serious service-blocking problems may be High.
+- Security, financial-risk, or sensitive account issues require human review.
+- If important information is missing, say so.
+
+Require Specific Output Format: ON
+
+============================================================
+NODE 3 — OpenAI Chat Model
+============================================================
+
+Node name:
+OpenAI Chat Model
+
+Connect:
+AI Ticket Analyzer -> Chat Model
+
+Credential:
+Your existing OpenAI credential
+
+Model:
+Use the same working model from your previous workflows.
+
+Other settings:
+Default initially.
+
+============================================================
+NODE 4 — Structured Output Parser
+============================================================
+
+Node name:
+Structured Output Parser
+
+Connect:
+AI Ticket Analyzer -> Output Parser
+
+Schema Type:
+Generate From JSON Example
+
+JSON Example:
+{
+  "customerName": "Rahul Patel",
+  "customerEmail": "rahul@example.com",
+  "subject": "Certificate download problem",
+  "issue": "Customer cannot download the certificate.",
+  "category": "Technical Support",
+  "priority": "High",
+  "needsHumanApproval": false,
+  "missingInformation": ""
+}
+
+============================================================
+NODE 5 — Edit Fields (Set)
+============================================================
+
+Node name:
+Prepare Support Ticket
+
+Connect:
+AI Ticket Analyzer -> Prepare Support Ticket
+
+Mode:
+Manual Mapping
+
+Fields:
+
+ticketId
+Type: String
+Value:
+SUP-{{ $now.toFormat('yyyyMMddHHmmss') }}
+
+createdAt
+Type: String
+Value:
+{{ $now }}
+
+customerName
+Type: String
+Value:
+{{ $json.output.customerName }}
+
+customerEmail
+Type: String
+Value:
+{{ $json.output.customerEmail }}
+
+subject
+Type: String
+Value:
+{{ $json.output.subject }}
+
+issue
+Type: String
+Value:
+{{ $json.output.issue }}
+
+category
+Type: String
+Value:
+{{ $json.output.category }}
+
+priority
+Type: String
+Value:
+{{ $json.output.priority }}
+
+needsHumanApproval
+Type: Boolean
+Value:
+{{ $json.output.needsHumanApproval }}
+
+============================================================
+NODE 6 — IF
+============================================================
+
+Node name:
+Ticket Validation
+
+Value 1:
+{{ $json.customerEmail }}
+
+Operator:
+is not empty
+
+TRUE:
+Continue.
+
+FALSE:
+Manual review/error path.
+
+============================================================
+NODE 7 — Switch
+============================================================
+
+Node name:
+Priority Router
+
+Value:
+{{ $json.priority }}
+
+Rules:
+Output 0: is equal to Low
+Output 1: is equal to Medium
+Output 2: is equal to High
+Output 3: is equal to Critical
+
+SLA:
+Low = 24 hours
+Medium = 8 hours
+High = 2 hours
+Critical = 1 hour
+
+============================================================
+NODE 8 — Google Sheets
+============================================================
+
+Node name:
+Knowledge Base Lookup
+
+Resource:
+Sheet Within Document
+
+Operation:
+Use the Read/Get Rows operation available in your n8n version.
+
+Document:
+AI Customer Support Database
+
+Sheet:
+Knowledge_Base
+
+Purpose:
+Retrieve company support information.
+
+If your version does not have a direct search operation, read the rows and filter them in a following node.
+
+============================================================
+NODE 9 — AI Agent
+============================================================
+
+Node name:
+AI Resolution Agent
+
+Prompt:
+You are a customer support resolution agent.
+
+Customer issue:
+{{ $json.issue }}
+
+Category:
+{{ $json.category }}
+
+Priority:
+{{ $json.priority }}
+
+Customer:
+{{ $json.customerName }}
+
+Knowledge base information:
+{{ JSON.stringify($json) }}
+
+Instructions:
+1. Use only supplied knowledge-base information.
+2. Do not invent company policies.
+3. Do not invent technical procedures.
+4. If the knowledge base is insufficient, set needsHumanApproval to true.
+5. Do not make promises about refunds, payments, certificates, delivery dates, or account changes unless supported by knowledge.
+6. Keep the response professional and concise.
+
+Return:
+resolution
+customerReply
+needsHumanApproval
+reason
+
+Require Specific Output Format: ON
+
+============================================================
+NODE 10 — OpenAI Chat Model
+============================================================
+
+Connect:
+AI Resolution Agent -> Chat Model
+
+Credential:
+Existing OpenAI credential
+
+Model:
+Use working model.
+
+============================================================
+NODE 11 — Structured Output Parser
+============================================================
+
+JSON Example:
+{
+  "resolution": "Verify that the certificate record is active and ready.",
+  "customerReply": "Hello Rahul, please confirm that your certificate has been marked as ready. If it is not ready yet, we will notify you when it becomes available.",
+  "needsHumanApproval": false,
+  "reason": ""
+}
+
+============================================================
+NODE 12 — IF
+============================================================
+
+Node name:
+Human Approval Check
+
+Value 1:
+{{ $json.output.needsHumanApproval }}
+
+Operator:
+is equal to
+
+Value 2:
+true
+
+TRUE:
+Human approval branch.
+
+FALSE:
+Automatic reply branch.
+
+============================================================
+NODE 13 — Gmail Send Message
+============================================================
+
+Node name:
+Human Approval Request
+
+Resource:
+Message
+
+Operation:
+Send
+
+To:
+Support manager email
+
+Subject:
+Support Approval Required — {{ $json.ticketId }}
+
+Email Type:
+HTML
+
+Message:
+<h3>Support Ticket Requires Approval</h3>
+<p><strong>Ticket:</strong> {{ $json.ticketId }}</p>
+<p><strong>Customer:</strong> {{ $json.customerName }}</p>
+<p><strong>Issue:</strong> {{ $json.issue }}</p>
+<p><strong>Priority:</strong> {{ $json.priority }}</p>
+<p><strong>AI Resolution:</strong> {{ $json.output.resolution }}</p>
+<p><strong>Suggested Reply:</strong></p>
+<p>{{ $json.output.customerReply }}</p>
+<p><strong>Reason:</strong> {{ $json.output.reason }}</p>
+
+============================================================
+NODE 14 — Gmail Send Message
+============================================================
+
+Node name:
+Send Customer Reply
+
+Connect:
+FALSE output of Human Approval Check -> Send Customer Reply
+
+Resource:
+Message
+Operation:
+Send
+To:
+{{ $json.customerEmail }}
+Subject:
+Re: {{ $json.subject }}
+Email Type:
+HTML
+
+Message:
+<p>Hello {{ $json.customerName }},</p>
+<p>{{ $json.output.customerReply }}</p>
+<p>Regards,<br>Customer Support Team</p>
+
+============================================================
+NODE 15 — Google Sheets
+============================================================
+
+Node name:
+Save Support Ticket
+
+Resource:
+Sheet Within Document
+Operation:
+Append Row
+Document:
+AI Customer Support Database
+Sheet:
+Tickets
+
+Mapping:
+Ticket ID -> {{ $json.ticketId }}
+Date -> {{ $json.createdAt }}
+Customer Name -> {{ $json.customerName }}
+Email -> {{ $json.customerEmail }}
+Subject -> {{ $json.subject }}
+Issue -> {{ $json.issue }}
+Category -> {{ $json.category }}
+Priority -> {{ $json.priority }}
+Status -> Resolved by AI OR Pending Human Approval
+AI Resolution -> {{ $json.output.resolution }}
+Human Approval -> {{ $json.output.needsHumanApproval }}
+SLA Deadline -> from SLA stage
+
+============================================================
+NODE 16 — Switch
+============================================================
+
+Node name:
+SLA Router
+
+Value:
+{{ $json.priority }}
+
+Rules:
+Low = Low
+Medium = Medium
+High = High
+Critical = Critical
+
+============================================================
+NODE 17 — Edit Fields (Set)
+============================================================
+
+Node name:
+Set SLA Deadline
+
+Create field:
+slaDeadline
+
+Low branch:
+{{ $now.plus({ hours: 24 }) }}
+
+Medium branch:
+{{ $now.plus({ hours: 8 }) }}
+
+High branch:
+{{ $now.plus({ hours: 2 }) }}
+
+Critical branch:
+{{ $now.plus({ hours: 1 }) }}
+
+If your n8n version does not support this exact expression, use a Date & Time node to add hours.
+
+============================================================
+NODE 18 — Google Sheets
+============================================================
+
+Node name:
+Save SLA Log
+
+Resource:
+Sheet Within Document
+Operation:
+Append Row
+Document:
+AI Customer Support Database
+Sheet:
+SLA_Log
+
+Mapping:
+Ticket ID -> {{ $json.ticketId }}
+Priority -> {{ $json.priority }}
+Created At -> {{ $json.createdAt }}
+SLA Deadline -> {{ $json.slaDeadline }}
+Current Status -> Open
+Escalation Status -> Not Escalated
+
+============================================================
+NODE 19 — Google Sheets
+============================================================
+
+Node name:
+Support Logger
+
+Resource:
+Sheet Within Document
+Operation:
+Append Row
+Document:
+AI Customer Support Database
+Sheet:
+Support_Log
+
+Mapping:
+Timestamp -> {{ $now }}
+Ticket ID -> {{ $json.ticketId }}
+Workflow -> AI Customer Support Resolution System
+Action -> Ticket processed
+Status -> Success
+Message -> AI analyzed and routed the support ticket.
+
+============================================================
+PART 3 — SLA MONITOR WORKFLOW
+============================================================
+
+Create second workflow:
+AI Support SLA Monitor
+
+NODE 1 — Schedule Trigger
+
+Trigger:
+Every Hour
+
+NODE 2 — Google Sheets
+
+Node name:
+Get Open Tickets
+
+Resource:
+Sheet Within Document
+Operation:
+Read/Get Rows
+Document:
+AI Customer Support Database
+Sheet:
+SLA_Log
+
+NODE 3 — IF
+
+Node name:
+Check SLA
+
+Check:
+Current Status = Open
+AND
+SLA Deadline is before current time
+
+TRUE -> escalation
+FALSE -> no action
+
+NODE 4 — Gmail Send Message
+
+Node name:
+SLA Escalation Email
+
+Resource: Message
+Operation: Send
+To: Support manager
+Subject:
+SLA Escalation — {{ $json.ticketId }}
+
+Message:
+<h3>Support SLA Escalation</h3>
+<p>Ticket <strong>{{ $json.ticketId }}</strong> has exceeded its SLA.</p>
+<p><strong>Priority:</strong> {{ $json.priority }}</p>
+<p><strong>SLA Deadline:</strong> {{ $json.slaDeadline }}</p>
+<p>Please review this ticket immediately.</p>
+
+============================================================
+PART 4 — TEST CASES
+============================================================
+
+TEST 1 — Technical Support
+Subject: Certificate download problem
+Body:
+I completed my course but I cannot download my certificate. Please help me.
+Expected: Technical Support, High, knowledge-based response.
+
+TEST 2 — Billing
+Subject: Payment deducted but not updated
+Body:
+I made a payment but the payment status has not been updated. Transaction reference is TXN12345.
+Expected: Billing, human review recommended.
+
+TEST 3 — Missing Information
+Subject: Something is wrong
+Body:
+My account has a problem. Please fix it.
+Expected: Do not invent the issue; request information or human review.
+
+TEST 4 — Certificate Not Ready
+Subject: Where is my certificate?
+Body:
+I completed my course. When can I download my certificate?
+Expected: Use the knowledge-base policy; do not promise an unsupported date.
+
+============================================================
+FINAL ARCHITECTURE
+============================================================
+
+MAIN WORKFLOW:
+Gmail Trigger
+ -> AI Ticket Analyzer
+ -> OpenAI Chat Model
+ -> Structured Output Parser
+ -> Prepare Support Ticket
+ -> Ticket Validation
+ -> Priority Router
+ -> Knowledge Base Lookup
+ -> AI Resolution Agent
+ -> OpenAI Chat Model
+ -> Structured Output Parser
+ -> Human Approval Check
+ -> Human Approval / Customer Reply
+ -> Save Support Ticket
+ -> SLA Router
+ -> Set SLA Deadline
+ -> Save SLA Log
+ -> Support Logger
+
+SLA WORKFLOW:
+Schedule Trigger
+ -> Get Open Tickets
+ -> Check SLA
+ -> SLA Escalation Email
+
+============================================================
+OPTIONAL ADVANCED UPGRADE — RAG
+============================================================
+
+After the basic project works, replace Google Sheets knowledge lookup with:
+Documents -> Document Loader -> Text Splitter -> Embeddings -> Vector Store -> Retriever -> AI Resolution Agent
+
+The AI Resolution Agent should answer only from retrieved company knowledge.
+
+============================================================
+STUDENT LEARNING CHECKLIST
+============================================================
+
+[ ] Gmail Trigger
+[ ] AI Agent
+[ ] OpenAI Chat Model
+[ ] Structured Output Parser
+[ ] Edit Fields (Set)
+[ ] IF
+[ ] Switch
+[ ] Google Sheets
+[ ] Expressions
+[ ] Knowledge Base
+[ ] Human-in-the-loop
+[ ] Automatic email response
+[ ] SLA calculation
+[ ] Schedule Trigger
+[ ] Escalation
+[ ] Logging
+[ ] RAG architecture
+[ ] AI safety
+
+END OF PROJECT
